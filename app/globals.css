@@ -1,0 +1,167 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #f5f4f0;
+  --surface: #eeede8;
+  --surface-strong: #e5e3dc;
+  --text: #101010;
+  --muted: #74736e;
+  --line: rgba(16, 16, 16, 0.12);
+}
+
+.dark {
+  --bg: #0c0c0c;
+  --surface: #151515;
+  --surface-strong: #202020;
+  --text: #f5f4f0;
+  --muted: #9a9993;
+  --line: rgba(245, 244, 240, 0.14);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Arial, Helvetica, sans-serif;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+button,
+a,
+input,
+select {
+  font: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Keep the normal arrow cursor everywhere, including clickable elements. */
+a,
+button,
+input,
+select,
+[role="button"] {
+  cursor: default;
+}
+
+::selection {
+  background: var(--text);
+  color: var(--bg);
+}
+
+.page-shell {
+  width: min(1440px, calc(100% - 48px));
+  margin: 0 auto;
+}
+
+.eyebrow {
+  font-family: "Courier New", monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.hairline {
+  border-color: var(--line);
+}
+
+.nav-link {
+  transition: opacity 0.2s ease;
+}
+
+.nav-link:hover {
+  opacity: 0.55;
+}
+
+.icon-button {
+  display: inline-flex;
+  min-height: 36px;
+  min-width: 36px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line);
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 42px;
+  padding: 0 16px;
+  border: 1px solid var(--text);
+  transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
+
+.button:hover {
+  transform: translateY(-2px);
+}
+
+.button-dark {
+  background: var(--text);
+  color: var(--bg);
+}
+
+.button-quiet {
+  border-color: var(--line);
+}
+
+.section-space {
+  padding: 96px 0;
+}
+
+.product-image {
+  transition: transform 0.6s cubic-bezier(0.2, 0.75, 0.25, 1);
+}
+
+.product-card:hover .product-image {
+  transform: scale(1.035);
+}
+
+.product-card .save-button {
+  opacity: 0;
+  transform: translateY(5px);
+}
+
+.product-card:hover .save-button,
+.product-card:focus-within .save-button {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.ad-card {
+  isolation: isolate;
+}
+
+.range {
+  accent-color: var(--text);
+}
+
+@media (max-width: 760px) {
+  .page-shell {
+    width: min(100% - 28px, 1440px);
+  }
+
+  .section-space {
+    padding: 72px 0;
+  }
+
+  .product-card .save-button {
+    opacity: 1;
+    transform: none;
+  }
+}
