@@ -10,9 +10,13 @@ import {
   Users,
   type LucideIcon,
 } from "lucide-react";
-import { ads, brandPlans, products, userPlans } from "@/lib/data";
+import { brandPlans, userPlans } from "@/lib/data";
+import { useLiveCatalogue } from "@/components/use-catalogue";
 
 export default function DevPanel() {
+  const catalogue = useLiveCatalogue();
+  const products = catalogue?.products ?? [];
+  const ads = catalogue?.ads ?? [];
   const [search, setSearch] = useState("");
   const [showAds, setShowAds] = useState(true);
   const [showProducts, setShowProducts] = useState(true);
@@ -24,12 +28,12 @@ export default function DevPanel() {
           p.name.toLowerCase().includes(search.toLowerCase()) ||
           p.label.toLowerCase().includes(search.toLowerCase())
       ),
-    [search]
+    [search, products]
   );
 
   const stats: [string, number, LucideIcon][] = [
     ["Products", products.length, Package],
-    ["Brands", 5, Users],
+    ["Brands", catalogue?.brands.length ?? 0, Users],
     ["Ad examples", ads.length, Megaphone],
     ["User plans", userPlans.length, Database],
   ];
@@ -45,8 +49,7 @@ export default function DevPanel() {
           </h1>
 
           <p className="mt-4 max-w-xl text-sm leading-6 text-[color:var(--muted)]">
-            This is intentionally simple. Replace these local arrays with your
-            database later and the UI can stay largely the same.
+            Control the catalogue from Admin → Catalogue. This panel just mirrors live listings.
           </p>
         </div>
 

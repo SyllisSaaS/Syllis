@@ -12,6 +12,7 @@ export type Product = {
   retailer: string;
   featured?: boolean;
   stock?: number;
+  brandSlug?: string;
 };
 
 export type Brand = {
@@ -26,16 +27,6 @@ export type Brand = {
   products: number;
 };
 
-export type Ad = {
-  id: string;
-  title: string;
-  brand: string;
-  image: string;
-  placement: "All" | "Streetwear" | "Techwear" | "Washed" | "Outdoor";
-  days: 3 | 7;
-  basePrice: number;
-};
-
 export const styles = [
   "Techwear",
   "Washed",
@@ -46,9 +37,44 @@ export const styles = [
   "Workwear",
   "Archive",
   "Skate",
-];
+] as const;
 
-export const products: Product[] = [
+export type StyleName = (typeof styles)[number];
+export type AdPlacement = "All" | "Brand" | "Drop" | StyleName;
+export type CatalogueSource = "demo" | "seed" | "real";
+
+export function isStyleName(value: string): value is StyleName {
+  return (styles as readonly string[]).includes(value);
+}
+
+export function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
+export type Ad = {
+  id: string;
+  title: string;
+  brand: string;
+  image: string;
+  placement: AdPlacement;
+  days: 3 | 7;
+  basePrice: number;
+  productSlug?: string;
+  endsAt?: string;
+};
+
+export type Collection = {
+  slug: string;
+  title: string;
+  subtitle: string;
+  image: string;
+  products: string[];
+};
+
+export const demoProducts: Product[] = [
   {
     id: "p1",
     slug: "washed-heavy-zip",
@@ -213,7 +239,7 @@ export const products: Product[] = [
   },
 ];
 
-export const brands: Brand[] = [
+export const demoBrands: Brand[] = [
   {
     id: "b1",
     slug: "north-00",
@@ -270,7 +296,7 @@ export const brands: Brand[] = [
   },
 ];
 
-export const collections = [
+export const demoCollections: Collection[] = [
   {
     slug: "washed-edit",
     title: "The Washed Edit",
@@ -294,7 +320,7 @@ export const collections = [
   },
 ];
 
-export const ads: Ad[] = [
+export const demoAds: Ad[] = [
   {
     id: "ad1",
     title: "Kuro Supply — SS26",
@@ -303,6 +329,7 @@ export const ads: Ad[] = [
     placement: "All",
     days: 3,
     basePrice: 100,
+    productSlug: "utility-shell-jacket",
   },
   {
     id: "ad2",
@@ -312,6 +339,7 @@ export const ads: Ad[] = [
     placement: "Washed",
     days: 7,
     basePrice: 80,
+    productSlug: "washed-heavy-zip",
   },
   {
     id: "ad3",
@@ -321,86 +349,59 @@ export const ads: Ad[] = [
     placement: "Techwear",
     days: 3,
     basePrice: 70,
+    productSlug: "technical-vest",
   },
 ];
 
-export const userPlans = [
-  {
-    id: "free",
-    name: "Free",
-    price: 0,
-    description: "The full Syllis discovery experience without early access.",
-    features: [
-      "Browse every listed brand and product",
-      "Save products and brands",
-      "Standard drop access",
-      "No subscription fee",
-    ],
-  },
-  {
-    id: "early",
-    name: "Early",
-    price: 4,
-    description: "A low-cost upgrade for people who want first access to selected drops.",
-    features: [
-      "Everything in Free",
-      "Selected drops shown early",
-      "Reserve a limited number of units",
-      "Early-access notifications",
-      "Priority access windows",
-    ],
-  },
-];
-
-export const brandPlans = [
-  {
-    id: "starter",
-    name: "Starter",
-    price: 12,
-    description: "For a small label getting its first products onto Syllis.",
-    products: 15,
-    features: [
-      "Up to 15 live products",
-      "Brand profile",
-      "Basic analytics",
-      "Standard discovery placement",
-      "Waitlist access",
-    ],
-  },
-  {
-    id: "growth",
-    name: "Growth",
-    price: 29,
-    description: "For brands ready to scale their catalogue and reach.",
-    products: 75,
-    features: [
-      "Up to 75 live products",
-      "Enhanced analytics",
-      "Priority discovery eligibility",
-      "Drop scheduling",
-      "Early-access controls",
-      "Featured-brand applications",
-    ],
-  },
-  {
-    id: "premium",
-    name: "Premium",
-    price: 59,
-    description: "For established independent brands that want maximum control.",
-    products: 250,
-    features: [
-      "Up to 250 live products",
-      "Advanced analytics",
-      "Priority placement",
-      "Drop scheduling + reservations",
-      "One 3-day niche ad slot each month",
-      "Premium support",
-    ],
-  },
-];
+export { brandPlans, shopperPlans as userPlans } from "./plans";
 
 export const adPricing = {
   all: { 3: 100, 7: 200 },
   niche: { 3: 70, 7: 135 },
+  brand: { 3: 180, 7: 320 },
+  drop: { 3: 240, 7: 420 },
   renewalMultiplier: 1.45,
+  renewalCap: 4,
+  slots: { all: 3, niche: 1, brand: 2, drop: 2 },
 };
+
+export function adRenewalPrice(base: number, timesRenewed: number) {
+  const steps = Math.min(Math.max(0, timesRenewed), adPricing.renewalCap);
+  let price = base;
+  for (let i = 0; i < steps; i += 1) {
+    price = Math.round(price * adPricing.renewalMultiplier);
+  }
+  return price;
+}
+
+export function adsForPlacement(ads: Ad[], placement: AdPlacement) {
+  const cap =
+    placement === "All"
+      ? adPricing.slots.all
+      : placement === "Brand"
+        ? adPricing.slots.brand
+        : placement === "Drop"
+          ? adPricing.slots.drop
+          : adPricing.slots.niche;
+  return ads.filter((ad) => ad.placement === placement).slice(0, cap);
+}
+
+export function resolveAdHref(ad: Ad, products: Product[], brands: Brand[] = []) {
+  if (ad.productSlug) return `/product/${ad.productSlug}`;
+  if (ad.placement === "Drop") return "/drops";
+  if (ad.placement === "Brand") {
+    const brand = brands.find((item) => item.name.toLowerCase() === ad.brand.toLowerCase());
+    return brand ? `/brands/${brand.slug}` : "/brands";
+  }
+  const brandName = ad.brand.toLowerCase();
+  const fromBrand = products.filter((product) => product.label.toLowerCase() === brandName);
+  const nicheMatch =
+    ad.placement !== "All" ? fromBrand.find((product) => product.style === ad.placement) : undefined;
+  const product =
+    nicheMatch || fromBrand[0] || products.find((item) => item.image === ad.image);
+  if (product) return `/product/${product.slug}`;
+  const brand = brands.find((item) => item.name.toLowerCase() === brandName);
+  if (brand) return `/brands/${brand.slug}`;
+  if (ad.placement !== "All") return `/discover?style=${encodeURIComponent(ad.placement)}`;
+  return "/discover";
+}

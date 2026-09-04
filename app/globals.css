@@ -2,22 +2,61 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
+:root,
+[data-look="studio"] {
   --bg: #f5f4f0;
   --surface: #eeede8;
   --surface-strong: #e5e3dc;
   --text: #101010;
   --muted: #74736e;
   --line: rgba(16, 16, 16, 0.12);
+  --pink: #f5a8c8;
+  --blue: #a8d4f5;
+  --yellow: #f5e6a8;
+  --green: #a8f5d4;
+  --radius-control: 0px;
+  --radius-card: 0px;
+  --radius-pill: 0px;
+  --font-sans: Arial, Helvetica, sans-serif;
+  --font-display: Arial, Helvetica, sans-serif;
+  --font-eyebrow: "Courier New", Courier, monospace;
+  --blob-opacity: 0;
 }
 
-.dark {
+.dark,
+.dark[data-look="studio"],
+[data-look="studio"].dark {
   --bg: #0c0c0c;
   --surface: #151515;
   --surface-strong: #202020;
   --text: #f5f4f0;
   --muted: #9a9993;
   --line: rgba(245, 244, 240, 0.14);
+}
+
+html[data-look="colour"] {
+  --bg: #f0ede8;
+  --surface: rgba(255, 255, 255, 0.55);
+  --surface-strong: rgba(255, 255, 255, 0.78);
+  --text: #111010;
+  --muted: #7a7570;
+  --line: rgba(17, 16, 16, 0.12);
+  --radius-control: 12px;
+  --radius-card: 22px;
+  --radius-pill: 100px;
+  --font-sans: var(--font-dm-sans), "DM Sans", sans-serif;
+  --font-display: var(--font-syne), Syne, sans-serif;
+  --font-eyebrow: var(--font-syne), Syne, sans-serif;
+  --blob-opacity: 0.5;
+}
+
+html.dark[data-look="colour"] {
+  --bg: #121014;
+  --surface: rgba(255, 255, 255, 0.06);
+  --surface-strong: rgba(255, 255, 255, 0.1);
+  --text: #f4f0ea;
+  --muted: #b4aea6;
+  --line: rgba(244, 240, 234, 0.14);
 }
 
 * {
@@ -32,14 +71,22 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
   transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+h1,
+h2,
+h3,
+.display {
+  font-family: var(--font-display);
 }
 
 button,
 a,
 input,
-select {
+select,
+textarea {
   font: inherit;
 }
 
@@ -48,7 +95,6 @@ a {
   text-decoration: none;
 }
 
-/* Keep the normal arrow cursor everywhere, including clickable elements. */
 a,
 button,
 input,
@@ -68,7 +114,7 @@ select,
 }
 
 .eyebrow {
-  font-family: "Courier New", monospace;
+  font-family: var(--font-eyebrow);
   font-size: 10px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -94,6 +140,7 @@ select,
   align-items: center;
   justify-content: center;
   border: 1px solid var(--line);
+  border-radius: var(--radius-control);
 }
 
 .button {
@@ -104,6 +151,7 @@ select,
   min-height: 42px;
   padding: 0 16px;
   border: 1px solid var(--text);
+  border-radius: var(--radius-pill);
   transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease;
 }
 
@@ -143,12 +191,116 @@ select,
   transform: translateY(0);
 }
 
+.product-card a > div:first-child,
+.ad-card,
+.reserved-card > a > div:first-child,
+.look-card,
+.panel {
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+
+input,
+select,
+textarea {
+  border-radius: var(--radius-control);
+}
+
 .ad-card {
   isolation: isolate;
+  box-shadow: 0 0 0 2px var(--yellow);
+}
+
+.reserved-card {
+  isolation: isolate;
+}
+
+.reserved-card > a > div:first-child {
+  box-shadow: 0 0 0 2px var(--yellow);
+}
+
+.ad-badge {
+  background: var(--yellow);
 }
 
 .range {
   accent-color: var(--text);
+}
+
+.colour-blobs {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+  opacity: var(--blob-opacity);
+  transition: opacity 0.4s ease;
+}
+
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.85;
+  animation: drift 12s ease-in-out infinite alternate;
+}
+
+.blob.b1 {
+  width: 500px;
+  height: 500px;
+  background: var(--pink);
+  top: -100px;
+  left: -100px;
+  animation-duration: 14s;
+}
+
+.blob.b2 {
+  width: 400px;
+  height: 400px;
+  background: var(--blue);
+  top: 20%;
+  right: -80px;
+  animation-duration: 11s;
+  animation-delay: -4s;
+}
+
+.blob.b3 {
+  width: 350px;
+  height: 350px;
+  background: var(--yellow);
+  bottom: 10%;
+  left: 20%;
+  animation-duration: 16s;
+  animation-delay: -2s;
+}
+
+.blob.b4 {
+  width: 300px;
+  height: 300px;
+  background: var(--green);
+  bottom: -50px;
+  right: 30%;
+  animation-duration: 13s;
+  animation-delay: -6s;
+}
+
+@keyframes drift {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(30px, 20px) scale(1.08);
+  }
+  100% {
+    transform: translate(-20px, 40px) scale(0.95);
+  }
+}
+
+header,
+main,
+footer {
+  position: relative;
+  z-index: 1;
 }
 
 @media (max-width: 760px) {

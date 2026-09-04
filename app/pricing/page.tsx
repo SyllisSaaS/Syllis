@@ -1,13 +1,14 @@
-"use client";
-
-import { useState } from "react";
-import { Check, ArrowRight, Megaphone, Users, Store } from "lucide-react";
+import { Check, ArrowRight, Megaphone, Users, Store, Sparkles } from "lucide-react";
 import Link from "next/link";
-import { userPlans, brandPlans, adPricing } from "@/lib/data";
+import { userPlans, brandPlans, adPricing, adRenewalPrice } from "@/lib/data";
+import { CheckoutButton } from "@/components/checkout-button";
+
+const allRenewals = [0, 1, 2, 3, 4].map((times) => ({
+  times,
+  price: adRenewalPrice(adPricing.all[3], times),
+}));
 
 export default function PricingPage() {
-  const [renewal, setRenewal] = useState(false);
-
   return (
     <div className="page-shell">
       <section className="border-b hairline py-16 md:py-24">
@@ -56,9 +57,15 @@ export default function PricingPage() {
                 ))}
               </ul>
 
-              <Link href="/signup" className={`button mt-9 w-full ${plan.id === "early" ? "button-dark" : "button-quiet"}`} data-cursor="JOIN">
-                {plan.id === "free" ? "Create free account" : "Get Early"} <ArrowRight size={15} />
-              </Link>
+              {plan.id === "free" ? (
+                <Link href="/signup" className="button button-quiet mt-9 w-full" data-cursor="JOIN">
+                  Create free account <ArrowRight size={15} />
+                </Link>
+              ) : (
+                <CheckoutButton plan="early" className="button button-dark mt-9 w-full">
+                  Start 7-day Early trial <ArrowRight size={15} />
+                </CheckoutButton>
+              )}
             </article>
           ))}
         </div>
@@ -104,9 +111,12 @@ export default function PricingPage() {
                 </ul>
               </div>
 
-              <Link href="/waitlist" className={`button mt-9 w-full ${plan.id === "growth" ? "button-dark" : "button-quiet"}`} data-cursor="JOIN">
-                Join brand waitlist <ArrowRight size={15} />
-              </Link>
+              <CheckoutButton
+                plan={plan.id}
+                className={`button mt-9 w-full ${plan.id === "growth" ? "button-dark" : "button-quiet"}`}
+              >
+                Start 7-day {plan.name} trial <ArrowRight size={15} />
+              </CheckoutButton>
             </article>
           ))}
         </div>
@@ -118,16 +128,28 @@ export default function PricingPage() {
             <p className="eyebrow mb-3">03 / Advertising</p>
             <h2 className="text-4xl font-semibold tracking-[-.055em] md:text-5xl">Own a slot.</h2>
             <p className="mt-4 text-sm leading-6 text-[color:var(--muted)]">
-              Demo pricing for a future marketplace where brands can book short campaigns into specific discovery surfaces.
+              Niches are cheaper because fewer people see them. All Syllis costs more because it sits on Home and Discover. Slots are capped so the feed stays readable.
             </p>
+            <p className="mt-4 text-xs leading-5 text-[color:var(--muted)]">
+              {adPricing.slots.all} All Syllis · {adPricing.slots.niche} per niche · {adPricing.slots.brand} brand · {adPricing.slots.drop} drop · each renew is 45% more, then the price locks after {adPricing.renewalCap} renewals.
+            </p>
+            <Link href="/studio" className="button button-dark mt-6 w-fit" data-cursor="OPEN">
+              Book a slot in Studio <ArrowRight size={15} />
+            </Link>
           </div>
 
           <div className="space-y-4">
             <div className="border hairline p-6">
-              <div className="flex items-center gap-3">
-                <Megaphone size={18} />
-                <h3 className="text-lg font-semibold">All Syllis</h3>
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <Megaphone size={18} />
+                  <h3 className="text-lg font-semibold">All Syllis</h3>
+                </div>
+                <span className="text-[10px] uppercase tracking-[.12em] text-[color:var(--muted)]">
+                  {adPricing.slots.all} slots
+                </span>
               </div>
+              <p className="mt-2 text-xs text-[color:var(--muted)]">Home featured row and Discover / All Syllis.</p>
               <div className="mt-5 grid grid-cols-2 gap-3">
                 <div className="bg-[color:var(--surface)] p-4">
                   <p className="eyebrow">3 days</p>
@@ -141,10 +163,16 @@ export default function PricingPage() {
             </div>
 
             <div className="border hairline p-6">
-              <div className="flex items-center gap-3">
-                <Users size={18} />
-                <h3 className="text-lg font-semibold">Niche placement</h3>
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <Users size={18} />
+                  <h3 className="text-lg font-semibold">Niche</h3>
+                </div>
+                <span className="text-[10px] uppercase tracking-[.12em] text-[color:var(--muted)]">
+                  {adPricing.slots.niche} slot each
+                </span>
               </div>
+              <p className="mt-2 text-xs text-[color:var(--muted)]">Only on that niche page — Washed, Techwear, and so on.</p>
               <div className="mt-5 grid grid-cols-2 gap-3">
                 <div className="bg-[color:var(--surface)] p-4">
                   <p className="eyebrow">3 days</p>
@@ -157,17 +185,55 @@ export default function PricingPage() {
               </div>
             </div>
 
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="border hairline p-6">
+                <div className="flex items-center gap-3">
+                  <Store size={18} />
+                  <h3 className="text-lg font-semibold">Brand slot</h3>
+                </div>
+                <p className="mt-2 text-xs text-[color:var(--muted)]">On Home labels and the Brands index.</p>
+                <div className="mt-5 grid grid-cols-2 gap-3">
+                  <div className="bg-[color:var(--surface)] p-4">
+                    <p className="eyebrow">3 days</p>
+                    <p className="mt-2 text-2xl font-semibold">£{adPricing.brand[3]}</p>
+                  </div>
+                  <div className="bg-[color:var(--surface)] p-4">
+                    <p className="eyebrow">7 days</p>
+                    <p className="mt-2 text-2xl font-semibold">£{adPricing.brand[7]}</p>
+                  </div>
+                </div>
+              </div>
+              <div className="border hairline p-6">
+                <div className="flex items-center gap-3">
+                  <Sparkles size={18} />
+                  <h3 className="text-lg font-semibold">Drop slot</h3>
+                </div>
+                <p className="mt-2 text-xs text-[color:var(--muted)]">Timed launch on Drops. Most expensive, shortest heat.</p>
+                <div className="mt-5 grid grid-cols-2 gap-3">
+                  <div className="bg-[color:var(--surface)] p-4">
+                    <p className="eyebrow">3 days</p>
+                    <p className="mt-2 text-2xl font-semibold">£{adPricing.drop[3]}</p>
+                  </div>
+                  <div className="bg-[color:var(--surface)] p-4">
+                    <p className="eyebrow">7 days</p>
+                    <p className="mt-2 text-2xl font-semibold">£{adPricing.drop[7]}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div className="border hairline p-6">
-              <label className="flex items-center justify-between gap-4">
-                <span>
-                  <span className="block text-sm font-semibold">Renewal simulation</span>
-                  <span className="mt-1 block text-xs text-[color:var(--muted)]">Each renewal is 45% higher than the previous booking.</span>
-                </span>
-                <input type="checkbox" checked={renewal} onChange={(e) => setRenewal(e.target.checked)} />
-              </label>
-              <div className="mt-5 bg-[color:var(--surface)] p-4">
-                <p className="eyebrow">All Syllis / 3 days</p>
-                <p className="mt-2 text-2xl font-semibold">£{Math.round(adPricing.all[3] * (renewal ? adPricing.renewalMultiplier : 1))}</p>
+              <p className="text-sm font-semibold">Renewal ladder — All Syllis / 3 days</p>
+              <p className="mt-1 text-xs text-[color:var(--muted)]">
+                Each renew is 45% more than the last. After {adPricing.renewalCap} renewals the price stays put.
+              </p>
+              <div className="mt-5 grid grid-cols-5 gap-2">
+                {allRenewals.map((row) => (
+                  <div key={row.times} className="bg-[color:var(--surface)] p-3">
+                    <p className="eyebrow">{row.times === 0 ? "First" : `Renew ${row.times}`}</p>
+                    <p className="mt-2 text-lg font-semibold">£{row.price}</p>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -178,11 +244,33 @@ export default function PricingPage() {
         <div className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
           <div>
             <p className="eyebrow">Ready to test the seller side?</p>
-            <p className="mt-2 text-xl font-semibold">Join the early brand waitlist.</p>
+            <p className="mt-2 text-xl font-semibold">Create a brand account, then start a trial.</p>
           </div>
-          <Link href="/waitlist" className="button button-dark" data-cursor="JOIN">
-            Join waitlist <Store size={15} />
+          <Link href="/signup?role=brand" className="button button-dark" data-cursor="JOIN">
+            Create brand account <Store size={15} />
           </Link>
+        </div>
+      </section>
+
+      <section className="section-space border-t hairline">
+        <p className="eyebrow mb-3">04 / Founding year</p>
+        <h2 className="text-4xl font-semibold tracking-[-.055em] md:text-5xl">Early brands, one year in.</h2>
+        <p className="mt-3 max-w-xl text-sm text-[color:var(--muted)]">
+          Founding brands and early-access shoppers get a stepped first year, then full price.
+        </p>
+        <div className="mt-8 grid gap-3 md:grid-cols-5">
+          {[
+            ["Month 1", "Free"],
+            ["Months 2–3", "90% off"],
+            ["Months 4–6", "75% off"],
+            ["Months 7–9", "50% off"],
+            ["Months 10–12", "25% off"],
+          ].map(([when, off]) => (
+            <div key={when} className="panel border hairline p-5">
+              <p className="text-xs text-[color:var(--muted)]">{when}</p>
+              <p className="mt-2 text-xl font-semibold">{off}</p>
+            </div>
+          ))}
         </div>
       </section>
     </div>

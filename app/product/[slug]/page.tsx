@@ -1,29 +1,50 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ArrowRight } from "lucide-react";
-import { products } from "@/lib/data";
+import { ArrowLeft } from "lucide-react";
+import { findLiveProduct } from "@/lib/catalogue";
+import { dropForProduct } from "@/lib/drops";
+import { Track } from "@/components/track";
+import { ProductActions } from "@/components/product-actions";
+
+export const dynamic = "force-dynamic";
 
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const product = products.find((item) => item.slug === slug);
+  const product = await findLiveProduct(slug);
 
   if (!product) notFound();
 
+  const drop = dropForProduct(product.id);
+  const brandSlug =
+    product.brandSlug ||
+    product.label
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
+
   return (
     <div className="page-shell section-space">
+      <Track name="product_view" productId={product.id} brandSlug={brandSlug} />
       <Link href="/discover" className="mb-8 inline-flex items-center gap-2 text-xs" data-cursor="BACK">
         <ArrowLeft size={14} /> Back to discover
       </Link>
 
       <div className="grid gap-10 md:grid-cols-[1.05fr_.95fr]">
-        <div className="aspect-[4/5] overflow-hidden bg-[color:var(--surface)]">
+        <div
+          className="aspect-[4/5] overflow-hidden bg-[color:var(--surface)]"
+          style={{ borderRadius: "var(--radius-card)" }}
+        >
           <img src={product.image} alt={product.name} className="h-full w-full object-cover" />
         </div>
 
         <div className="flex flex-col justify-between">
           <div>
-            <p className="eyebrow">{product.label}</p>
-            <h1 className="mt-3 text-[clamp(44px,6vw,82px)] font-semibold leading-[.88] tracking-[-.07em]">{product.name}</h1>
+            <p className="eyebrow">
+              <Link href={`/brands/${brandSlug}`}>{product.label}</Link>
+            </p>
+            <h1 className="mt-3 text-[clamp(44px,6vw,82px)] font-semibold leading-[.88] tracking-[-.07em]">
+              {product.name}
+            </h1>
             <p className="mt-5 text-2xl">£{product.price}</p>
             <p className="mt-6 max-w-xl text-sm leading-7 text-[color:var(--muted)]">{product.description}</p>
           </div>
@@ -34,16 +55,18 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
               <span>{product.retailer}</span>
             </div>
             <div className="mt-3 flex justify-between text-xs">
+              <span>Niche</span>
+              <Link href={`/discover?style=${encodeURIComponent(product.style)}`}>{product.style}</Link>
+            </div>
+            <div className="mt-3 flex justify-between text-xs">
               <span>Category</span>
               <span>{product.category}</span>
             </div>
             <div className="mt-3 flex justify-between text-xs">
-              <span>Demo stock</span>
+              <span>Stock</span>
               <span>{product.stock ?? "—"} units</span>
             </div>
-            <button type="button" className="button button-dark mt-8 w-full" data-cursor="SHOP">
-              Visit retailer <ArrowRight size={15} />
-            </button>
+            <ProductActions product={product} brandSlug={brandSlug} dropId={drop?.id ?? null} />
           </div>
         </div>
       </div>

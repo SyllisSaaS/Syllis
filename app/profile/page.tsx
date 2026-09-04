@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Settings, LogOut, Heart, User } from "lucide-react";
+import { ArrowRight, Heart, LogOut, Settings, User } from "lucide-react";
+import { CheckoutButton, PortalButton } from "@/components/checkout-button";
+import { isSupabaseConfigured } from "@/lib/env";
 import { createClient } from "@/lib/supabase/client";
 
 type Profile = {
@@ -11,12 +13,16 @@ type Profile = {
   username: string | null;
   email: string | null;
   plan: string | null;
+  role: string | null;
+  trial_ends_at: string | null;
+  subscription_status: string | null;
+  verification_status: string | null;
+  founding_brand: boolean | null;
+  founding_member: boolean | null;
   created_at: string | null;
 };
 
 export default function ProfilePage() {
-  const supabase = createClient();
-
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [loggedIn, setLoggedIn] = useState(false);
@@ -24,6 +30,13 @@ export default function ProfilePage() {
   useEffect(() => {
     async function loadProfile() {
       try {
+        if (!isSupabaseConfigured()) {
+          setLoggedIn(false);
+          setLoading(false);
+          return;
+        }
+
+        const supabase = createClient();
         const {
           data: { user },
         } = await supabase.auth.getUser();
@@ -36,46 +49,26 @@ export default function ProfilePage() {
 
         setLoggedIn(true);
 
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("id, name, username, email, plan, created_at")
-          .eq("id", user.id)
-          .single();
-
-        if (error) {
-          console.error("Profile loading error:", error);
-
-          // Still show the account using Supabase auth information
-          setProfile({
-            id: user.id,
-            name:
-              user.user_metadata?.name ??
-              user.user_metadata?.full_name ??
-              null,
-            username: user.user_metadata?.username ?? null,
-            email: user.email ?? null,
-            plan: "free",
-            created_at: user.created_at ?? null,
+        const params = new URLSearchParams(window.location.search);
+        const sessionId = params.get("session_id");
+        if (params.get("checkout") === "success" && sessionId) {
+          await fetch("/api/stripe/confirm", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ sessionId }),
           });
+        }
 
+        const me = await fetch("/api/account/me");
+        if (!me.ok) {
           setLoading(false);
           return;
         }
-
+        const data = (await me.json()) as Profile;
         setProfile({
           ...data,
           plan: data.plan ?? "free",
-          name:
-            data.name ??
-            user.user_metadata?.name ??
-            user.user_metadata?.full_name ??
-            null,
-          username:
-            data.username ??
-            user.user_metadata?.username ??
-            null,
-          email: data.email ?? user.email ?? null,
-          created_at: data.created_at ?? user.created_at ?? null,
+          role: data.role ?? "shopper",
         });
       } catch (error) {
         console.error("Unexpected profile error:", error);
@@ -85,9 +78,14 @@ export default function ProfilePage() {
     }
 
     loadProfile();
-  }, [supabase]);
+  }, []);
 
   async function handleLogout() {
+    if (!isSupabaseConfigured()) {
+      window.location.href = "/";
+      return;
+    }
+    const supabase = createClient();
     await supabase.auth.signOut();
     window.location.href = "/";
   }
@@ -181,14 +179,19 @@ export default function ProfilePage() {
               </p>
             </div>
 
-            <Link
-              href="/settings"
-              className="button button-quiet"
-              data-cursor="SETTINGS"
-            >
-              <Settings size={14} />
-              Settings
-            </Link>
+            <div className="flex flex-wrap gap-3">
+              <Link
+                href="/settings"
+                className="button button-quiet"
+                data-cursor="SETTINGS"
+              >
+                <Settings size={14} />
+                Settings
+              </Link>
+              <Link href="/help" className="button button-quiet" data-cursor="HELP">
+                Help
+              </Link>
+            </div>
           </div>
         </div>
 
@@ -209,6 +212,16 @@ export default function ProfilePage() {
                   <span className="border hairline px-2 py-1 text-[10px] uppercase tracking-[.12em]">
                     {planName}
                   </span>
+                  {profile.role && (
+                    <span className="border hairline px-2 py-1 text-[10px] uppercase tracking-[.12em]">
+                      {profile.role}
+                    </span>
+                  )}
+                  {profile.verification_status && profile.verification_status !== "verified" && (
+                    <span className="border hairline px-2 py-1 text-[10px] uppercase tracking-[.12em]">
+                      {profile.verification_status}
+                    </span>
+                  )}
                 </div>
 
                 {profile.username && (
@@ -225,7 +238,14 @@ export default function ProfilePage() {
 
                 <p className="mt-5 text-xs text-[color:var(--muted)]">
                   Member since {memberSince}
+                  {profile.founding_brand ? " · founding brand" : ""}
+                  {profile.founding_member ? " · founding member" : ""}
                 </p>
+                {profile.role === "admin" && (
+                  <Link href="/admin" className="mt-4 inline-flex text-xs underline underline-offset-4">
+                    Open admin console
+                  </Link>
+                )}
               </div>
             </div>
           </div>
@@ -241,18 +261,23 @@ export default function ProfilePage() {
                 </p>
 
                 <p className="mt-2 text-xs text-[color:var(--muted)]">
-                  Syllis membership
+                  {profile.subscription_status === "trialing"
+                    ? profile.trial_ends_at
+                      ? `Trial until ${new Date(profile.trial_ends_at).toLocaleDateString("en-GB")}`
+                      : "Trial active"
+                    : "Syllis membership"}
                 </p>
               </div>
 
               {profile.plan === "free" && (
-                <Link
-                  href="/pricing"
-                  className="button button-dark"
-                  data-cursor="UPGRADE"
-                >
-                  Upgrade <ArrowRight size={14} />
-                </Link>
+                <CheckoutButton plan="early" className="button button-dark">
+                  Try Early <ArrowRight size={14} />
+                </CheckoutButton>
+              )}
+              {profile.plan && profile.plan !== "free" && (
+                <PortalButton className="button button-quiet">
+                  Manage billing
+                </PortalButton>
               )}
             </div>
           </div>
@@ -297,6 +322,27 @@ export default function ProfilePage() {
 
               <p className="mt-2 text-xs leading-5 text-[color:var(--muted)] group-hover:text-current">
                 Everything you&apos;ve saved in one place.
+              </p>
+
+              <ArrowRight
+                size={16}
+                className="mt-7 transition-transform group-hover:translate-x-1"
+              />
+            </Link>
+
+            <Link
+              href="/studio"
+              className="group border hairline p-7 transition hover:bg-[color:var(--text)] hover:text-[color:var(--bg)]"
+              data-cursor="STUDIO"
+            >
+              <User size={18} />
+
+              <p className="mt-12 text-xl font-semibold tracking-[-.03em]">
+                Brand studio
+              </p>
+
+              <p className="mt-2 text-xs leading-5 text-[color:var(--muted)] group-hover:text-current">
+                Analytics and plan controls for labels.
               </p>
 
               <ArrowRight

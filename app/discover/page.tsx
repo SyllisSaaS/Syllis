@@ -1,7 +1,11 @@
 import { Suspense } from "react";
+import { getLiveCatalogue } from "@/lib/catalogue";
 import DiscoverContent from "./discover-content";
 
-export default function DiscoverPage() {
+export const dynamic = "force-dynamic";
+
+export default async function DiscoverPage() {
+  const { products, ads, brands } = await getLiveCatalogue();
   return (
     <Suspense
       fallback={
@@ -17,7 +21,7 @@ export default function DiscoverPage() {
         </div>
       }
     >
-      <DiscoverContent />
+      <DiscoverContent products={products} ads={ads} brands={brands} />
     </Suspense>
   );
 }

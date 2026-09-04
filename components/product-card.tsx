@@ -5,6 +5,9 @@ import { Heart } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { Product } from "@/lib/data";
 import { createClient } from "@/lib/supabase/client";
+import { isSupabaseConfigured } from "@/lib/env";
+import { T } from "@/lib/tables";
+import { trackEvent } from "@/lib/track";
 
 export function ProductCard({ product }: { product: Product }) {
   const [saved, setSaved] = useState(false);
@@ -13,6 +16,11 @@ export function ProductCard({ product }: { product: Product }) {
 
   useEffect(() => {
     async function checkSaved() {
+      if (!isSupabaseConfigured()) {
+        setLoading(false);
+        return;
+      }
+
       const supabase = createClient();
 
       const {
@@ -25,7 +33,7 @@ export function ProductCard({ product }: { product: Product }) {
       }
 
       const { data } = await supabase
-        .from("saved_items")
+        .from(T.savedItems)
         .select("id")
         .eq("user_id", user.id)
         .eq("product_id", product.id)
@@ -41,6 +49,11 @@ export function ProductCard({ product }: { product: Product }) {
   async function toggleSaved() {
     if (saving) return;
 
+    if (!isSupabaseConfigured()) {
+      window.location.href = "/login";
+      return;
+    }
+
     const supabase = createClient();
 
     const {
@@ -54,34 +67,41 @@ export function ProductCard({ product }: { product: Product }) {
 
     setSaving(true);
 
-    if (saved) {
-      const { error } = await supabase
-        .from("saved_items")
-        .delete()
-        .eq("user_id", user.id)
-        .eq("product_id", product.id);
+    try {
+      if (saved) {
+        const { error } = await supabase
+          .from(T.savedItems)
+          .delete()
+          .eq("user_id", user.id)
+          .eq("product_id", product.id);
 
-      if (!error) {
-        setSaved(false);
+        if (!error) {
+          setSaved(false);
+        } else {
+          console.error("Failed to unsave product:", error);
+        }
       } else {
-        console.error("Failed to unsave product:", error);
-      }
-    } else {
-      const { error } = await supabase
-        .from("saved_items")
-        .insert({
+        const { error } = await supabase.from(T.savedItems).insert({
           user_id: user.id,
           product_id: product.id,
         });
 
-      if (!error) {
-        setSaved(true);
-      } else {
-        console.error("Failed to save product:", error);
+        if (!error) {
+          setSaved(true);
+          trackEvent("product_save", {
+            productId: product.id,
+            brandSlug: product.label
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, "-")
+              .replace(/(^-|-$)/g, ""),
+          });
+        } else {
+          console.error("Failed to save product:", error);
+        }
       }
+    } finally {
+      setSaving(false);
     }
-
-    setSaving(false);
   }
 
   return (
@@ -96,6 +116,8 @@ export function ProductCard({ product }: { product: Product }) {
             src={product.image}
             alt={product.name}
             className="product-image h-full w-full object-cover"
+            loading="lazy"
+            decoding="async"
           />
 
           {product.badge && (
@@ -137,7 +159,7 @@ export function ProductCard({ product }: { product: Product }) {
           </span>
 
           <span className="text-[11px] text-[color:var(--muted)]">
-            {product.category}
+            {product.style} · {product.category}
           </span>
         </div>
       </div>

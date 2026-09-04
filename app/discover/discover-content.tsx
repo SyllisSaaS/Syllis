@@ -3,18 +3,24 @@
 import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { SlidersHorizontal, X } from "lucide-react";
-import { products, styles, ads } from "@/lib/data";
+import { adsForPlacement, isStyleName, styles, type Ad, type Brand, type Product, type StyleName } from "@/lib/data";
 import { ProductCard } from "@/components/product-card";
 import { AdCard } from "@/components/ad-card";
 
-export default function DiscoverContent() {
+export default function DiscoverContent({
+  products,
+  ads,
+  brands,
+}: {
+  products: Product[];
+  ads: Ad[];
+  brands: Brand[];
+}) {
   const params = useSearchParams();
   const initialStyle = params.get("style");
 
-  const [style, setStyle] = useState(
-    initialStyle && styles.includes(initialStyle)
-      ? initialStyle
-      : "All"
+  const [style, setStyle] = useState<"All" | StyleName>(
+    initialStyle && isStyleName(initialStyle) ? initialStyle : "All"
   );
 
   const [maxPrice, setMaxPrice] = useState(250);
@@ -24,16 +30,19 @@ export default function DiscoverContent() {
     () =>
       products.filter((p) => {
         const styleMatch = style === "All" || p.style === style;
-
         return styleMatch && p.price <= maxPrice;
       }),
-    [style, maxPrice]
+    [style, maxPrice, products]
   );
+
+  const placedAds = adsForPlacement(ads, style === "All" ? "All" : style);
 
   return (
     <div className="page-shell">
       <section className="border-b hairline py-14 md:py-20">
-        <p className="eyebrow mb-4">Discover</p>
+        <p className="eyebrow mb-4">
+          {style === "All" ? "Discover / All Syllis" : `Discover / ${style} niche`}
+        </p>
 
         <div className="flex flex-col justify-between gap-7 md:flex-row md:items-end">
           <div>
@@ -48,15 +57,16 @@ export default function DiscoverContent() {
                 <>
                   {style}
                   <br />
-                  edit.
+                  niche.
                 </>
               )}
             </h1>
           </div>
 
           <p className="max-w-sm text-sm leading-6 text-[color:var(--muted)]">
-            Browse independent pieces, emerging labels and styles curated by
-            Syllis.
+            {style === "All"
+              ? "Every niche in one feed. Premium sponsored slots sit at the top."
+              : `Pieces tagged ${style}. Niche ads are cheaper than All Syllis, and only show here.`}
           </p>
         </div>
       </section>
@@ -77,22 +87,37 @@ export default function DiscoverContent() {
             filterOpen ? "block" : "hidden"
           } md:flex md:items-center md:justify-between`}
         >
-          <div className="flex flex-wrap gap-2">
-            {["All", ...styles].map((item) => (
+          <div>
+            <p className="eyebrow mb-3">Niches</p>
+            <div className="flex flex-wrap gap-2">
               <button
                 type="button"
-                key={item}
-                onClick={() => setStyle(item)}
+                onClick={() => setStyle("All")}
                 className={`border px-3 py-2 text-[11px] transition ${
-                  style === item
+                  style === "All"
                     ? "border-[color:var(--text)] bg-[color:var(--text)] text-[color:var(--bg)]"
                     : "border-[color:var(--line)]"
                 }`}
                 data-cursor="FILTER"
               >
-                {item}
+                All Syllis
               </button>
-            ))}
+              {styles.map((item) => (
+                <button
+                  type="button"
+                  key={item}
+                  onClick={() => setStyle(item)}
+                  className={`border px-3 py-2 text-[11px] transition ${
+                    style === item
+                      ? "border-[color:var(--text)] bg-[color:var(--text)] text-[color:var(--bg)]"
+                      : "border-[color:var(--line)]"
+                  }`}
+                  data-cursor="FILTER"
+                >
+                  {item}
+                </button>
+              ))}
+            </div>
           </div>
 
           <label className="flex items-center gap-3 text-[11px] text-[color:var(--muted)]">
@@ -111,7 +136,7 @@ export default function DiscoverContent() {
 
         <div className="mb-6 flex items-center justify-between">
           <p className="text-xs text-[color:var(--muted)]">
-            {filtered.length} pieces
+            {style === "All" ? `${filtered.length} pieces across all niches` : `${filtered.length} pieces in ${style}`}
           </p>
 
           {(style !== "All" || maxPrice !== 250) && (
@@ -130,14 +155,17 @@ export default function DiscoverContent() {
           )}
         </div>
 
-        {style !== "All" && (
-          <div className="mb-8">
-            {ads
-              .filter((ad) => ad.placement === style)
-              .slice(0, 1)
-              .map((ad) => (
-                <AdCard key={ad.id} ad={ad} compact />
-              ))}
+        {placedAds.length > 0 && (
+          <div className={`mb-10 ${placedAds.length > 1 ? "grid gap-4 md:grid-cols-3" : ""}`}>
+            {placedAds.map((ad) => (
+              <AdCard
+                key={ad.id}
+                ad={ad}
+                products={products}
+                brands={brands}
+                compact={style !== "All" || placedAds.length > 1}
+              />
+            ))}
           </div>
         )}
 

@@ -2,24 +2,33 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Heart, ArrowRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { products, type Product } from "@/lib/data";
+import { isSupabaseConfigured } from "@/lib/env";
+import { useLiveCatalogue } from "@/components/use-catalogue";
 import { ProductCard } from "@/components/product-card";
+import { ReservedCard, type Hold } from "@/components/reserved-card";
+import { T } from "@/lib/tables";
 
-type SavedItem = {
+type SavedRow = {
   product_id: string;
 };
 
 export default function SavedPage() {
-  const [savedProducts, setSavedProducts] = useState<Product[]>([]);
+  const catalogue = useLiveCatalogue();
+  const [savedProducts, setSavedProducts] = useState<import("@/lib/data").Product[]>([]);
+  const [holds, setHolds] = useState<Hold[]>([]);
   const [loading, setLoading] = useState(true);
   const [loggedIn, setLoggedIn] = useState(false);
 
   useEffect(() => {
-    async function loadSavedProducts() {
-      const supabase = createClient();
+    async function load() {
+      if (!isSupabaseConfigured()) {
+        setLoggedIn(false);
+        setLoading(false);
+        return;
+      }
 
+      const supabase = createClient();
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -31,130 +40,106 @@ export default function SavedPage() {
       }
 
       setLoggedIn(true);
+      if (!catalogue) return;
 
-      const { data, error } = await supabase
-        .from("saved_items")
-        .select("product_id")
-        .eq("user_id", user.id);
+      const [{ data, error }, holdsRes] = await Promise.all([
+        supabase.from(T.savedItems).select("product_id").eq("user_id", user.id),
+        fetch("/api/reserves"),
+      ]);
 
       if (error) {
-        console.error("Failed to load saved products:", error);
-        setLoading(false);
-        return;
+        console.error("Error loading saved products:", error);
       }
 
-      const savedItems = (data ?? []) as SavedItem[];
+      const ids = ((data ?? []) as SavedRow[]).map((row) => row.product_id);
+      setSavedProducts((catalogue.products ?? []).filter((product) => ids.includes(product.id)));
 
-      const matchedProducts = savedItems
-        .map((item) =>
-          products.find((product) => product.id === item.product_id)
-        )
-        .filter((product): product is Product => Boolean(product));
+      if (holdsRes.ok) {
+        const payload = (await holdsRes.json()) as { holds?: Hold[] };
+        setHolds(payload.holds ?? []);
+      }
 
-      setSavedProducts(matchedProducts);
       setLoading(false);
     }
 
-    loadSavedProducts();
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="page-shell section-space">
-        <p className="eyebrow mb-4">Saved</p>
-
-        <h1 className="text-5xl font-semibold tracking-[-.06em]">
-          Your finds.
-        </h1>
-
-        <p className="mt-6 text-sm text-[color:var(--muted)]">
-          Loading your saved pieces...
-        </p>
-      </div>
-    );
-  }
-
-  if (!loggedIn) {
-    return (
-      <div className="page-shell section-space">
-        <div className="mx-auto max-w-xl text-center">
-          <div className="mx-auto grid size-16 place-items-center border hairline">
-            <Heart size={22} strokeWidth={1.5} />
-          </div>
-
-          <p className="eyebrow mt-8 mb-4">Saved</p>
-
-          <h1 className="text-5xl font-semibold tracking-[-.06em]">
-            Keep your finds.
-          </h1>
-
-          <p className="mx-auto mt-5 max-w-md text-sm leading-7 text-[color:var(--muted)]">
-            Create an account or log in to save pieces and build your own
-            collection of finds.
-          </p>
-
-          <div className="mt-8 flex justify-center gap-3">
-            <Link
-              href="/login"
-              className="button button-dark"
-              data-cursor="LOGIN"
-            >
-              Log in
-              <ArrowRight size={15} />
-            </Link>
-
-            <Link
-              href="/signup"
-              className="button"
-              data-cursor="JOIN"
-            >
-              Create account
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
+    void load();
+  }, [catalogue]);
 
   return (
     <div className="page-shell section-space">
       <p className="eyebrow mb-4">Saved</p>
-
-      <h1 className="text-5xl font-semibold tracking-[-.06em]">
-        Your finds.
-      </h1>
-
-      <p className="mt-4 text-sm text-[color:var(--muted)]">
-        Pieces you've saved on Syllis.
+      <h1 className="text-5xl font-semibold tracking-[-.06em]">Your finds.</h1>
+      <p className="mt-4 max-w-xl text-sm text-[color:var(--muted)]">
+        Saved pieces stay here. Drop holds are separate — they only last 30 minutes.
       </p>
 
-      {savedProducts.length === 0 ? (
-        <div className="mt-12 border hairline p-10 text-center">
-          <Heart size={24} strokeWidth={1.5} className="mx-auto" />
-
-          <h2 className="mt-5 text-xl font-semibold">
-            Nothing saved yet.
-          </h2>
-
-          <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-[color:var(--muted)]">
-            Explore Syllis and save pieces you want to come back to.
-          </p>
-
-          <Link
-            href="/discover"
-            className="button button-dark mt-7"
-            data-cursor="DISCOVER"
-          >
-            Discover pieces
-            <ArrowRight size={15} />
+      {!loggedIn && !loading && (
+        <div className="mt-10 border hairline p-8">
+          <p className="text-sm">Log in to see saved pieces and drop holds.</p>
+          <Link href="/login" className="button button-dark mt-6 inline-flex">
+            Log in
           </Link>
         </div>
-      ) : (
-        <div className="mt-10 grid grid-cols-2 gap-x-3 gap-y-10 md:grid-cols-4 md:gap-x-5">
-          {savedProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+      )}
+
+      {loading && <p className="mt-10 text-sm text-[color:var(--muted)]">Loading…</p>}
+
+      {!loading && loggedIn && (
+        <>
+          <section id="reserved" className="mt-12 scroll-mt-24">
+            <div className="mb-6 flex items-end justify-between gap-6 border-b hairline pb-4">
+              <div>
+                <p className="eyebrow">Reserved</p>
+                <h2 className="mt-2 text-2xl font-semibold tracking-[-.04em]">Drop holds</h2>
+                <p className="mt-2 max-w-md text-xs leading-5 text-[color:var(--muted)]">
+                  A reserve is a timed hold, not a purchase. Finish with the brand before the timer ends.
+                </p>
+              </div>
+              <Link href="/drops" className="hidden text-xs underline underline-offset-4 md:inline">
+                Open drops
+              </Link>
+            </div>
+
+            {holds.length === 0 ? (
+              <div className="border hairline p-6 text-sm text-[color:var(--muted)]">
+                No active holds. Reserve from{" "}
+                <Link href="/drops" className="underline underline-offset-4">
+                  Drops
+                </Link>{" "}
+                when a window is open.
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-x-3 gap-y-10 md:grid-cols-4 md:gap-x-5">
+                {holds.map((hold) => (
+                  <ReservedCard
+                    key={hold.id}
+                    hold={hold}
+                    onReleased={() => setHolds((rows) => rows.filter((row) => row.id !== hold.id))}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
+
+          <section className="mt-16">
+            <div className="mb-6 border-b hairline pb-4">
+              <p className="eyebrow">Saved</p>
+              <h2 className="mt-2 text-2xl font-semibold tracking-[-.04em]">Pieces you kept</h2>
+            </div>
+
+            {savedProducts.length === 0 ? (
+              <div className="border hairline p-6 text-sm text-[color:var(--muted)]">
+                Nothing saved yet. Heart a piece on Discover.
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-x-3 gap-y-10 md:grid-cols-4 md:gap-x-5">
+                {savedProducts.map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            )}
+          </section>
+        </>
       )}
     </div>
   );
