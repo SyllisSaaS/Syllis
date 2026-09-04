@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Syllis — Independent Fashion, Discovered Early</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f0ede8;--text:#111010;--muted:#7a7570;
+  --glass-bg:rgba(255,255,255,.45);--glass-border:rgba(255,255,255,.7);
+  --card-bg:rgba(255,255,255,.45);--card-border:rgba(255,255,255,.7);
+  --glow-pink:#f5a8c8;--glow-blue:#a8d4f5;--glow-yellow:#f5e6a8;--glow-green:#a8f5d4;
+  --nav-bg:rgba(240,237,232,.68);--divider:rgba(0,0,0,.08);
+  --surface:rgba(255,255,255,.55);--surface-border:rgba(255,255,255,.75);
+  --btn-secondary-bg:rgba(255,255,255,.6);--btn-secondary-border:rgba(0,0,0,.12);
+  --noise-opacity:.5;
+}
+[data-theme="dark"]{
+  --bg:#0e0d0c;--text:#f0ede8;--muted:#6a6560;
+  --glass-bg:rgba(30,28,25,.7);--glass-border:rgba(60,55,50,.5);
+  --card-bg:rgba(28,26,23,.8);--card-border:rgba(55,50,45,.5);
+  --glow-pink:#d4608a;--glow-blue:#608ab4;--glow-yellow:#c4a840;--glow-green:#60c490;
+  --nav-bg:rgba(14,13,12,.86);--divider:rgba(255,255,255,.07);
+  --surface:rgba(28,26,23,.8);--surface-border:rgba(55,50,45,.5);
+  --btn-secondary-bg:rgba(40,37,33,.8);--btn-secondary-border:rgba(70,65,58,.5);
+  --noise-opacity:.3;
+}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;transition:background .3s,color .3s;cursor:default}
+a,button,select,input,textarea{cursor:pointer}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:1;opacity:var(--noise-opacity)}
+.blob-wrap{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.blob{position:absolute;border-radius:50%;filter:blur(80px);opacity:.55;animation:drift 12s ease-in-out infinite alternate}
+[data-theme="dark"] .blob{opacity:.2}
+.b1{width:500px;height:500px;background:var(--glow-pink);top:-100px;left:-100px;animation-duration:14s}
+.b2{width:400px;height:400px;background:var(--glow-blue);top:20%;right:-80px;animation-duration:11s;animation-delay:-4s}
+.b3{width:350px;height:350px;background:var(--glow-yellow);bottom:10%;left:20%;animation-duration:16s;animation-delay:-2s}
+.b4{width:300px;height:300px;background:var(--glow-green);bottom:-50px;right:30%;animation-duration:13s;animation-delay:-6s}
+@keyframes drift{0%{transform:translate(0,0) scale(1)}50%{transform:translate(30px,20px) scale(1.08)}100%{transform:translate(-20px,40px) scale(.95)}}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:20px 40px;display:flex;justify-content:space-between;align-items:center;backdrop-filter:blur(12px);background:var(--nav-bg);border-bottom:1px solid var(--divider)}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:22px;letter-spacing:-.02em;color:var(--text);text-decoration:none}
+.logo span{color:transparent;-webkit-text-stroke:1.5px var(--text)}
+.nav-r{display:flex;gap:18px;align-items:center}
+.nav-r a{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:color .2s}
+.nav-r a:hover{color:var(--text)}
+.nav-btn{padding:10px 20px;background:var(--text);color:var(--bg);font-family:'DM Sans',sans-serif;font-size:12px;letter-spacing:.08em;text-transform:uppercase;border:none;border-radius:100px;transition:opacity .2s}
+.nav-btn:hover{opacity:.78}
+.nav-btn.outline{background:transparent;border:1.5px solid var(--text);color:var(--text)}
+.dark-toggle{width:38px;height:38px;border-radius:50%;background:var(--glass-bg);border:1px solid var(--glass-border);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .2s;flex-shrink:0}
+.dark-toggle:hover{background:var(--text);color:var(--bg)}
+
+.hero{min-height:100vh;position:relative;z-index:2;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:150px 64px 90px;max-width:1220px}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;padding:7px 16px;background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:100px;backdrop-filter:blur(12px);font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:40px;opacity:0;animation:up .7s ease .1s forwards}
+.badge-dot{width:7px;height:7px;border-radius:50%;background:#22c55e;box-shadow:0 0 6px #22c55e}
+.hero-title{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(56px,8vw,120px);line-height:.95;letter-spacing:-.04em;margin-bottom:16px;opacity:0;animation:up .8s ease .25s forwards}
+.hero-title .italic,.s-title .italic,.cta-title .italic,.route-title .italic{font-family:'Instrument Serif',serif;font-weight:400;font-style:italic;letter-spacing:-.02em}
+.hero-title .outline{-webkit-text-stroke:2px var(--text);color:transparent}
+.hero-sub{font-size:17px;line-height:1.7;color:var(--muted);max-width:620px;font-weight:300;margin:16px 0 42px;opacity:0;animation:up .8s ease .4s forwards}
+.hero-cta-group{display:flex;gap:12px;flex-wrap:wrap;opacity:0;animation:up .8s ease .55s forwards}
+.hero-meta{margin-top:24px;display:flex;align-items:center;gap:16px;opacity:0;animation:up .8s ease .7s forwards}
+.hero-meta-text{font-size:13px;color:var(--muted)}
+.hero-meta-text strong{color:var(--text)}
+
+.marquee-wrap{position:relative;z-index:2;padding:20px 0;overflow:hidden;border-top:1px solid var(--divider);border-bottom:1px solid var(--divider)}
+.marquee-track{display:flex;animation:marquee 20s linear infinite;width:max-content}
+.m-pill{padding:8px 20px;margin:0 6px;background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:100px;backdrop-filter:blur(8px);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.m-pill.hi{background:var(--text);color:var(--bg);border-color:var(--text)}
+@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+.section{position:relative;z-index:2;padding:105px 64px}
+.s-label{font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:var(--muted);margin-bottom:16px}
+.s-title{font-family:'Syne',sans-serif;font-weight:700;font-size:clamp(32px,4vw,52px);letter-spacing:-.03em;margin-bottom:58px;line-height:1.08}
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s ease}
+.reveal.on{opacity:1;transform:translateY(0)}
+
+.routes-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.route-card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:24px;backdrop-filter:blur(16px);padding:38px;box-shadow:0 4px 24px rgba(0,0,0,.04);transition:transform .3s,box-shadow .3s;position:relative;overflow:hidden}
+.route-card:hover{transform:translateY(-4px);box-shadow:0 16px 48px rgba(0,0,0,.08)}
+.route-glow{position:absolute;width:240px;height:240px;border-radius:50%;filter:blur(70px);opacity:.34;pointer-events:none;top:-80px;right:-80px}
+.route-card:nth-child(1) .route-glow{background:var(--glow-blue)}
+.route-card:nth-child(2) .route-glow{background:var(--glow-pink)}
+.route-card:nth-child(3) .route-glow{background:var(--glow-yellow)}
+.route-card:nth-child(4) .route-glow{background:var(--glow-green)}
+.route-num{font-family:'Syne',sans-serif;font-weight:800;font-size:46px;letter-spacing:-.04em;color:var(--divider);line-height:1;margin-bottom:24px}
+.route-icon{font-size:28px;margin-bottom:18px}
+.route-title{font-family:'Syne',sans-serif;font-weight:700;font-size:24px;letter-spacing:-.025em;margin-bottom:10px;position:relative;z-index:1}
+.route-text{font-size:14px;line-height:1.75;color:var(--muted);font-weight:300;max-width:560px;position:relative;z-index:1}
+.route-cap{display:inline-flex;margin:22px 0 16px;padding:6px 12px;border-radius:100px;background:var(--btn-secondary-bg);border:1px solid var(--btn-secondary-border);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--text);position:relative;z-index:1}
+.route-list{list-style:none;display:flex;flex-direction:column;gap:10px;position:relative;z-index:1}
+.route-list li{font-size:13px;color:var(--text);display:flex;gap:10px;align-items:flex-start}
+.route-list li::before{content:'✓';color:var(--muted);margin-top:1px;flex-shrink:0}
+
+.section-dark{position:relative;z-index:2;padding:0 64px 105px}
+.dark-panel{background:var(--text);color:var(--bg);border-radius:28px;padding:68px 72px;position:relative;overflow:hidden}
+.dark-panel::before{content:'';position:absolute;width:380px;height:380px;border-radius:50%;filter:blur(90px);background:var(--glow-pink);opacity:.13;top:-130px;right:-80px}
+.dark-panel::after{content:'';position:absolute;width:340px;height:340px;border-radius:50%;filter:blur(90px);background:var(--glow-blue);opacity:.11;bottom:-160px;left:35%}
+.dark-panel .s-label{color:rgba(255,255,255,.4)}
+.dark-panel .s-title{color:white;margin-bottom:24px}
+.dark-panel .panel-copy{font-size:15px;line-height:1.75;color:rgba(255,255,255,.52);max-width:700px;position:relative;z-index:1}
+
+.early-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:42px;position:relative;z-index:1}
+.early-card{border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.045);border-radius:20px;padding:28px}
+.early-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:24px}
+.early-name{font-family:'Syne',sans-serif;font-weight:700;font-size:20px;letter-spacing:-.02em;color:white}
+.early-cap{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.42);margin-top:7px}
+.early-badge{padding:6px 10px;background:var(--glow-yellow);color:#111;border-radius:100px;font-size:9px;letter-spacing:.13em;text-transform:uppercase;font-weight:700;white-space:nowrap}
+.early-highlight{font-size:13px;line-height:1.7;color:rgba(255,255,255,.7);margin-bottom:18px}
+.early-points{list-style:none;display:flex;flex-direction:column;gap:9px}
+.early-points li{font-size:12px;color:rgba(255,255,255,.58);display:flex;gap:10px}
+.early-points li::before{content:'+';color:rgba(255,255,255,.7);font-weight:700}
+
+.detail-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.info-card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:20px;backdrop-filter:blur(16px);padding:34px}
+.info-card h3{font-family:'Syne',sans-serif;font-size:18px;margin-bottom:10px;letter-spacing:-.02em}
+.info-card p{font-size:13px;line-height:1.75;color:var(--muted);font-weight:300}
+.info-card .mini{display:inline-block;margin-top:16px;padding:6px 10px;border-radius:100px;background:var(--btn-secondary-bg);border:1px solid var(--btn-secondary-border);font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
+
+.stylist-panel{margin-top:34px;background:var(--card-bg);border:1px solid var(--card-border);border-radius:24px;backdrop-filter:blur(16px);padding:40px}
+.stylist-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:34px;align-items:start}
+.stylist-title{font-family:'Syne',sans-serif;font-size:28px;font-weight:700;letter-spacing:-.03em;line-height:1.05;margin-bottom:12px}
+.stylist-copy{font-size:14px;line-height:1.75;color:var(--muted);font-weight:300}
+.stylist-bullets{list-style:none;display:flex;flex-direction:column;gap:12px}
+.stylist-bullets li{font-size:13px;color:var(--text);display:flex;gap:10px}
+.stylist-bullets li::before{content:'✓';color:var(--muted);flex-shrink:0}
+.fee-box{margin-top:22px;padding:18px 20px;border-radius:16px;background:var(--text);color:var(--bg)}
+.fee-box strong{font-family:'Syne',sans-serif;font-size:16px}
+.fee-box p{font-size:12px;line-height:1.65;opacity:.58;margin-top:5px}
+
+.faq-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+details{background:var(--card-bg);border:1px solid var(--card-border);border-radius:18px;backdrop-filter:blur(16px);padding:22px 24px}
+summary{font-family:'Syne',sans-serif;font-weight:600;font-size:15px;list-style:none;cursor:pointer;display:flex;justify-content:space-between;gap:16px}
+summary::-webkit-details-marker{display:none}
+summary::after{content:'+';font-size:20px;font-weight:400;color:var(--muted)}
+details[open] summary::after{content:'−'}
+details p{font-size:13px;line-height:1.75;color:var(--muted);margin-top:14px;padding-right:24px;font-weight:300}
+
+.cta-section{position:relative;z-index:2;padding:0 64px 120px}
+.cta-wrap{background:var(--text);border-radius:28px;padding:72px 80px;display:grid;grid-template-columns:1fr auto;align-items:center;gap:48px;overflow:hidden;position:relative}
+.cta-wrap::before{content:'';position:absolute;width:350px;height:350px;border-radius:50%;filter:blur(80px);opacity:.13;background:var(--glow-pink);top:-80px;left:-80px}
+.cta-wrap::after{content:'';position:absolute;width:350px;height:350px;border-radius:50%;filter:blur(80px);opacity:.11;background:var(--glow-blue);bottom:-120px;right:200px}
+.cta-content,.cta-btn{position:relative;z-index:1}
+.cta-tag{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:14px}
+.cta-title{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(28px,3.5vw,50px);color:white;letter-spacing:-.03em;line-height:1.05;margin-bottom:14px}
+.cta-text{font-size:15px;color:rgba(255,255,255,.45);font-weight:300;line-height:1.6;max-width:500px}
+.cta-btn{padding:18px 36px;background:white;color:#111;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;letter-spacing:.06em;text-transform:uppercase;border:none;border-radius:100px;white-space:nowrap;transition:opacity .2s}
+.cta-btn:hover{opacity:.85}
+
+footer{position:relative;z-index:2;border-top:1px solid var(--divider);padding:40px 64px;display:flex;justify-content:space-between;align-items:center}
+.f-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:20px;letter-spacing:-.03em}
+.f-text{font-size:12px;color:var(--muted)}
+@keyframes up{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);opacity:0;pointer-events:none;transition:opacity .25s}
+.modal-overlay.open{opacity:1;pointer-events:auto}
+.modal{background:var(--bg);border:1px solid var(--card-border);border-radius:24px;padding:40px;width:min(100% - 32px,460px);position:relative;transform:translateY(18px);transition:transform .25s}
+.modal-overlay.open .modal{transform:translateY(0)}
+.modal-close{position:absolute;top:16px;right:16px;width:32px;height:32px;border-radius:50%;background:var(--glass-bg);border:1px solid var(--glass-border);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--muted)}
+.modal-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:28px;letter-spacing:-.02em;margin-bottom:8px}
+.modal-logo span{color:transparent;-webkit-text-stroke:1.5px var(--text)}
+.modal-sub{font-size:14px;color:var(--muted);margin-bottom:26px;line-height:1.6}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+.field input,.field select,.field textarea{width:100%;padding:12px 14px;background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:12px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);outline:none}
+.field textarea{resize:vertical;min-height:90px}
+.modal-btn{width:100%;padding:14px;background:var(--text);color:var(--bg);font-family:'Syne',sans-serif;font-weight:700;font-size:13px;letter-spacing:.06em;text-transform:uppercase;border:none;border-radius:100px;margin-top:6px}
+.modal-note{font-size:11px;color:var(--muted);line-height:1.6;text-align:center;margin-top:12px}
+.modal-success{display:none;padding:16px 0 2px}
+.modal-success h3{font-family:'Syne',sans-serif;font-size:22px;margin-bottom:8px}
+.modal-success p{font-size:13px;color:var(--muted);line-height:1.7}
+
+@media(max-width:900px){
+  .routes-grid,.early-grid,.detail-grid,.stylist-grid,.faq-grid{grid-template-columns:1fr}
+  .cta-wrap{grid-template-columns:1fr;padding:52px 34px}
+}
+@media(max-width:768px){
+  nav{padding:16px 20px}.nav-r a{display:none}.nav-r{gap:8px}
+  .hero{padding:112px 24px 70px}.hero-title{font-size:clamp(48px,12vw,80px)}
+  .section{padding:82px 24px}.section-dark{padding:0 24px 82px}.cta-section{padding:0 24px 90px}
+  .dark-panel{padding:46px 28px}.route-card,.stylist-panel,.info-card{padding:28px}
+  footer{padding:30px 24px;flex-direction:column;gap:10px;text-align:center}
+}
+</style>
+</head>
+<body>
+<div class="blob-wrap"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div><div class="blob b4"></div></div>
+
+<nav>
+  <a class="logo" href="#top">Syl<span>lis</span></a>
+  <div class="nav-r">
+    <a href="#routes">Ways to join</a>
+    <a href="#early-access">Early access</a>
+    <a href="#stylist">Stylists</a>
+    <button class="dark-toggle" onclick="toggleDark()" id="darkBtn" title="Toggle dark mode">🌙</button>
+    <button class="nav-btn" onclick="openModal()">Join Syllis</button>
+  </div>
+</nav>
+
+<main id="top">
+  <section class="hero">
+    <div class="hero-badge"><span class="badge-dot"></span>Now building the founding community</div>
+    <h1 class="hero-title">Discover what<br><span class="italic">comes next.</span><br><span class="outline">Before everyone.</span></h1>
+    <p class="hero-sub">Syllis is being built as a discovery platform for independent fashion — connecting shoppers, stylists, brands, wholesalers and manufacturers in one place. We are opening the platform gradually rather than pretending it is already full of listings.</p>
+    <div class="hero-cta-group">
+      <button class="nav-btn" style="padding:14px 32px;font-size:13px" onclick="openModal()">Apply for early access</button>
+      <a class="nav-btn outline" style="padding:14px 32px;font-size:13px;text-decoration:none" href="#routes">See the four routes</a>
+    </div>
+    <div class="hero-meta">
+      <p class="hero-meta-text"><strong>Limited founding places.</strong> Applications are reviewed before access is confirmed.</p>
+    </div>
+  </section>
+
+  <div class="marquee-wrap">
+    <div class="marquee-track">
+      <span class="m-pill hi">Independent brands</span><span class="m-pill">Stylists</span><span class="m-pill">Wholesale</span><span class="m-pill hi">Manufacturers</span><span class="m-pill">Streetwear</span><span class="m-pill">Outdoor</span><span class="m-pill hi">Archive</span><span class="m-pill">Workwear</span><span class="m-pill">Minimal</span><span class="m-pill hi">Graphic Heavy</span><span class="m-pill">Y2K</span><span class="m-pill">Techwear</span>
+      <span class="m-pill hi">Independent brands</span><span class="m-pill">Stylists</span><span class="m-pill">Wholesale</span><span class="m-pill hi">Manufacturers</span><span class="m-pill">Streetwear</span><span class="m-pill">Outdoor</span><span class="m-pill hi">Archive</span><span class="m-pill">Workwear</span><span class="m-pill">Minimal</span><span class="m-pill hi">Graphic Heavy</span><span class="m-pill">Y2K</span><span class="m-pill">Techwear</span>
+    </div>
+  </div>
+
+  <section class="section" id="routes">
+    <p class="s-label reveal">Four ways in</p>
+    <h2 class="s-title reveal">Syllis starts with a <span class="italic">small, deliberate</span> network.</h2>
+    <div class="routes-grid">
+      <article class="route-card reveal">
+        <div class="route-glow"></div>
+        <div class="route-num">01</div><div class="route-icon">🏭</div>
+        <h3 class="route-title">Wholesale & manufacturers</h3>
+        <p class="route-text">A tightly selected supplier network for brands that need reliable sourcing, production and wholesale relationships.</p>
+        <div class="route-cap">5 early access places</div>
+        <ul class="route-list"><li>Supplier/manufacturer profile</li><li>Early network access while Syllis is small</li><li>Commercial terms agreed during onboarding</li><li>No public price is being announced yet</li></ul>
+      </article>
+      <article class="route-card reveal">
+        <div class="route-glow"></div>
+        <div class="route-num">02</div><div class="route-icon">✦</div>
+        <h3 class="route-title">Verified stylists</h3>
+        <p class="route-text">A founding group of stylists covering different aesthetics and niches, personally reviewed before they are listed on Syllis.</p>
+        <div class="route-cap">10 early access places</div>
+        <ul class="route-list"><li>Founding stylist profile and visibility</li><li>Referral-led opportunities from Syllis clients</li><li>Performance-based benefits as activity grows</li><li>5% Syllis service fee on completed stylist bookings</li></ul>
+      </article>
+      <article class="route-card reveal">
+        <div class="route-glow"></div>
+        <div class="route-num">03</div><div class="route-icon">🏷️</div>
+        <h3 class="route-title">Founding brands</h3>
+        <p class="route-text">The first brands shape the marketplace: category structure, discovery, feedback loops and what Syllis becomes known for.</p>
+        <div class="route-cap">10 founding brands</div>
+        <ul class="route-list"><li>Founding status on your Syllis profile</li><li>75% off the normal brand rate for the first 3 months</li><li>50% off the normal brand rate for the following 9 months</li><li>Exact pricing will be published before paid onboarding</li></ul>
+      </article>
+      <article class="route-card reveal">
+        <div class="route-glow"></div>
+        <div class="route-num">04</div><div class="route-icon">◌</div>
+        <h3 class="route-title">Early access users</h3>
+        <p class="route-text">The first community of shoppers gets the premium Syllis experience while the platform is still being built around real feedback.</p>
+        <div class="route-cap">750 early access places</div>
+        <ul class="route-list"><li>3 months of the premium user experience free</li><li>Early access benefits during the founding period</li><li>Direct feedback into product development</li><li>Pricing after the free period will be announced later</li></ul>
+      </article>
+    </div>
+  </section>
+
+  <section class="section-dark" id="early-access">
+    <div class="dark-panel reveal">
+      <p class="s-label">Founding access</p>
+      <h2 class="s-title">The rules are <span class="italic">clear</span>. The prices are not fixed yet.</h2>
+      <p class="panel-copy">Syllis is intentionally not publishing fixed subscription prices at this stage. The founding benefits below are the commitments being offered to the first people and businesses who help build the platform. When pricing is finalised, early members will see the agreed terms before anything becomes payable.</p>
+
+      <div class="early-grid">
+        <div class="early-card">
+          <div class="early-top"><div><div class="early-name">Early access users</div><div class="early-cap">750 places</div></div><span class="early-badge">3 months free</span></div>
+          <p class="early-highlight">Join the first community and receive the premium user experience for three months at no cost.</p>
+          <ul class="early-points"><li>Premium experience for 3 months</li><li>Founding-period access and feedback opportunities</li><li>No price is locked in for the period after the free access</li></ul>
+        </div>
+        <div class="early-card">
+          <div class="early-top"><div><div class="early-name">Founding brands</div><div class="early-cap">10 places</div></div><span class="early-badge">Founding rate</span></div>
+          <p class="early-highlight">Founding brands receive 75% off the normal rate for months 1–3, followed by 50% off for months 4–12.</p>
+          <ul class="early-points"><li>Founding brand recognition</li><li>75% off for the first 3 months</li><li>50% off for the next 9 months</li></ul>
+        </div>
+        <div class="early-card">
+          <div class="early-top"><div><div class="early-name">Early access brands</div><div class="early-cap">20 places</div></div><span class="early-badge">Early network</span></div>
+          <p class="early-highlight">A second group of carefully selected brands joins before the wider public launch.</p>
+          <ul class="early-points"><li>Early platform access</li><li>Founding-period feedback and testing</li><li>Final commercial terms shared before payment</li></ul>
+        </div>
+        <div class="early-card">
+          <div class="early-top"><div><div class="early-name">Suppliers & stylists</div><div class="early-cap">5 suppliers · 10 stylists</div></div><span class="early-badge">Selective</span></div>
+          <p class="early-highlight">These roles are commercial partnerships rather than one-size-fits-all subscriptions, so terms can be matched to the way each partner actually works.</p>
+          <ul class="early-points"><li>Supplier/manufacturer terms agreed during onboarding</li><li>Stylist opportunities driven by client referrals</li><li>Stylist benefits can scale with completed bookings and performance</li></ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="stylist">
+    <p class="s-label reveal">The stylist model</p>
+    <h2 class="s-title reveal">Not a subscription. A <span class="italic">performance partnership</span>.</h2>
+    <div class="stylist-panel reveal">
+      <div class="stylist-grid">
+        <div>
+          <h3 class="stylist-title">Stylists grow by helping clients make better choices.</h3>
+          <p class="stylist-copy">The founding stylist model is designed around referrals and completed work rather than charging stylists a fixed monthly amount just for being listed. Syllis can route relevant client demand to the stylist, and benefits can increase as the stylist completes more successful work.</p>
+          <div class="fee-box"><strong>5% Syllis service fee</strong><p>For completed stylist bookings generated through Syllis, the platform takes a 5% service commission from the stylist booking value. This is a platform fee for facilitating the booking, not a government tax.</p></div>
+        </div>
+        <ul class="stylist-bullets">
+          <li>Personally reviewed founding stylist group</li>
+          <li>Different niches and aesthetics represented</li>
+          <li>Referral opportunities based on client fit</li>
+          <li>More completed work can unlock additional benefits</li>
+          <li>Commercial terms can be agreed transparently before participation</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <p class="s-label reveal">What Syllis is actually building</p>
+    <h2 class="s-title reveal">A network, not just another <span class="italic">shop.</span></h2>
+    <div class="detail-grid">
+      <article class="info-card reveal"><h3>For shoppers</h3><p>Discover smaller labels, find your niche faster and get closer to the people behind the products.</p><span class="mini">750 early access places</span></article>
+      <article class="info-card reveal"><h3>For brands</h3><p>Get discovered by people who actively care about independent fashion instead of relying entirely on crowded social feeds.</p><span class="mini">10 founding + 20 early brands</span></article>
+      <article class="info-card reveal"><h3>For suppliers</h3><p>Build relationships with selected brands through a smaller, more deliberate network while Syllis is still being formed.</p><span class="mini">5 early access places</span></article>
+    </div>
+  </section>
+
+  <section class="section">
+    <p class="s-label reveal">Questions worth answering</p>
+    <h2 class="s-title reveal">Before you <span class="italic">apply.</span></h2>
+    <div class="faq-grid">
+      <details class="reveal"><summary>Are the prices final?</summary><p>No. Syllis is deliberately not publishing fixed subscription prices yet. The founding offers are described by discount or free-access period, and final prices will be shared before a paid commitment is required.</p></details>
+      <details class="reveal"><summary>What happens after the 3 free months for users?</summary><p>The premium experience continues according to the pricing Syllis establishes for the wider launch. Early members will see the terms before the free period ends.</p></details>
+      <details class="reveal"><summary>How does the founding brand discount work?</summary><p>Founding brands receive 75% off the normal brand rate for their first three months, then 50% off for the following nine months.</p></details>
+      <details class="reveal"><summary>Why does Syllis charge stylists 5%?</summary><p>The 5% is a platform service fee attached to completed bookings generated through Syllis. It covers the value of facilitating the client connection and booking workflow; it is not being presented as a tax.</p></details>
+      <details class="reveal"><summary>Are all applications automatically accepted?</summary><p>No. The early-access groups are intentionally limited and selective so the first version of the network remains useful and manageable.</p></details>
+      <details class="reveal"><summary>Can suppliers have a different commercial setup?</summary><p>Yes. Supplier and manufacturer relationships may need different commercial terms depending on the type of service, volume and relationship. Those details can be agreed during onboarding rather than forcing an unannounced public price.</p></details>
+    </div>
+  </section>
+
+  <section class="cta-section" id="apply">
+    <div class="cta-wrap reveal">
+      <div class="cta-content"><p class="cta-tag">Applications are open</p><h2 class="cta-title">Help shape what <span class="italic">Syllis becomes.</span></h2><p class="cta-text">Choose the role that fits you. Tell us what you do, what niche you work in and why you want to be part of the founding network.</p></div>
+      <button class="cta-btn" onclick="openModal()">Apply for early access →</button>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="f-logo">Syllis</div>
+  <p class="f-text">© 2026 Syllis — Independent fashion discovery</p>
+</footer>
+
+<div class="modal-overlay" id="modal" onclick="closeOnBackdrop(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <div id="modal-form-view">
+      <div class="modal-logo">Syl<span>lis</span></div>
+      <p class="modal-sub">Apply for founding or early access. This form is only for registering interest; it does not create a paid subscription.</p>
+      <div class="field"><label>I am applying as</label><select id="apply-type"><option>Early access user</option><option>Founding brand</option><option>Early access brand</option><option>Wholesale / manufacturer</option><option>Verified stylist</option></select></div>
+      <div class="field"><label>Name</label><input id="apply-name" type="text" placeholder="Your name"></div>
+      <div class="field"><label>Email</label><input id="apply-email" type="email" placeholder="you@example.com"></div>
+      <div class="field"><label>Brand / business / profile</label><input id="apply-org" type="text" placeholder="Optional"></div>
+      <div class="field"><label>Tell us a little about what you do</label><textarea id="apply-message" placeholder="Your niche, experience, what you are looking for, etc."></textarea></div>
+      <button class="modal-btn" onclick="submitApplication()">Submit application →</button>
+      <p class="modal-note">No payment is taken here. Commercial terms and any future pricing are confirmed separately.</p>
+    </div>
+    <div class="modal-success" id="modal-success"><h3>Application received.</h3><p>Thank you. Your interest has been recorded locally for this demo page. Connect this form to your backend/email service when you're ready to make applications live.</p></div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY='syllis_info_theme';
+let dark=localStorage.getItem(STORAGE_KEY)==='1';
+function applyDark(){document.documentElement.setAttribute('data-theme',dark?'dark':'light');document.getElementById('darkBtn').textContent=dark?'☀️':'🌙'}
+function toggleDark(){dark=!dark;localStorage.setItem(STORAGE_KEY,dark?'1':'0');applyDark()}
+applyDark();
+
+const obs=new IntersectionObserver((entries)=>{entries.forEach((entry,index)=>{if(entry.isIntersecting)setTimeout(()=>entry.target.classList.add('on'),index*70)})},{threshold:.1});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+function openModal(){document.getElementById('modal').classList.add('open');document.body.style.overflow='hidden'}
+function closeModal(){document.getElementById('modal').classList.remove('open');document.body.style.overflow=''}
+function closeOnBackdrop(e){if(e.target===e.currentTarget)closeModal()}
+function submitApplication(){
+  const type=document.getElementById('apply-type').value;
+  const name=document.getElementById('apply-name').value.trim();
+  const email=document.getElementById('apply-email').value.trim();
+  if(!name||!email||!email.includes('@')){alert('Please enter your name and a valid email.');return}
+  const applications=JSON.parse(localStorage.getItem('syllis_applications')||'[]');
+  applications.push({type,name,email,organisation:document.getElementById('apply-org').value.trim(),message:document.getElementById('apply-message').value.trim(),createdAt:new Date().toISOString()});
+  localStorage.setItem('syllis_applications',JSON.stringify(applications));
+  document.getElementById('modal-form-view').style.display='none';
+  document.getElementById('modal-success').style.display='block';
+}
+</script>
+</body>
+</html>
