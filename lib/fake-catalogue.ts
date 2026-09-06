@@ -1,153 +1,108 @@
 import { slugify, styles, type StyleName } from "./data";
 
+const SHARED = [
+  "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85",
+  "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=1200&q=85",
+  "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=1200&q=85",
+  "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=1200&q=85",
+];
+
 const IMAGES: Record<StyleName, string[]> = {
-  Techwear: [
-    "https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?auto=format&fit=crop&w=1200&q=85",
-    "https://images.unsplash.com/photo-1544966503-7cc5ac882d5f?auto=format&fit=crop&w=1200&q=85",
-    "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=1200&q=85",
-  ],
-  Washed: [
-    "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=1200&q=85",
-    "https://images.unsplash.com/photo-1618354691373-d851c5c3a990?auto=format&fit=crop&w=1200&q=85",
-    "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=1200&q=85",
-  ],
-  Minimal: [
-    "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&w=1200&q=85",
-    "https://images.unsplash.com/photo-1548883354-94bcfe321cbb?auto=format&fit=crop&w=1200&q=85",
+  Streetwear: SHARED,
+  Skate: SHARED,
+  Y2K: [
+    "https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&w=1200&q=85",
     "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=1200&q=85",
+    ...SHARED,
+  ],
+  Vintage: [
+    "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=1200&q=85",
+    "https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&w=1200&q=85",
   ],
   Graphic: [
     "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85",
     "https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&w=1200&q=85",
   ],
-  Utility: [
-    "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=1200&q=85",
-    "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=1200&q=85",
+  Minimal: [
+    "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&w=1200&q=85",
+    "https://images.unsplash.com/photo-1548883354-94bcfe321cbb?auto=format&fit=crop&w=1200&q=85",
   ],
-  Outdoor: [
-    "https://images.unsplash.com/photo-1506629905607-d9b1c3d4b7f4?auto=format&fit=crop&w=1200&q=85",
-    "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=1200&q=85",
+  Techwear: [
+    "https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?auto=format&fit=crop&w=1200&q=85",
+    "https://images.unsplash.com/photo-1544966503-7cc5ac882d5f?auto=format&fit=crop&w=1200&q=85",
   ],
   Workwear: [
     "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?auto=format&fit=crop&w=1200&q=85",
     "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=1200&q=85",
   ],
+  Outdoor: [
+    "https://images.unsplash.com/photo-1506629905607-d9b1c3d4b7f4?auto=format&fit=crop&w=1200&q=85",
+    "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=1200&q=85",
+  ],
   Archive: [
     "https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&w=1200&q=85",
     "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=1200&q=85",
   ],
-  Skate: [
-    "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85",
-    "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=1200&q=85",
-  ],
 };
 
 const NAMES: Record<StyleName, { name: string; category: string }[]> = {
-  Techwear: [
-    { name: "Shell Jacket", category: "Jackets" },
-    { name: "Technical Vest", category: "Outerwear" },
-    { name: "Zip Cargo", category: "Trousers" },
-    { name: "Hard Shell Pant", category: "Trousers" },
-    { name: "Modular Fleece", category: "Knitwear" },
-  ],
-  Washed: [
+  Streetwear: [
     { name: "Heavy Zip Hoodie", category: "Hoodies" },
-    { name: "Pigment Long Sleeve", category: "T-Shirts" },
-    { name: "Faded Crew", category: "Knitwear" },
-    { name: "Broken-in Pant", category: "Trousers" },
-    { name: "Sun-fade Shirt", category: "Shirts" },
-  ],
-  Minimal: [
-    { name: "Studio Overshirt", category: "Shirts" },
-    { name: "Down Layer", category: "Outerwear" },
-    { name: "Clean Crew", category: "Knitwear" },
-    { name: "Straight Trouser", category: "Trousers" },
+    { name: "Baggy Jean", category: "Trousers" },
     { name: "Box Tee", category: "T-Shirts" },
+  ],
+  Skate: [
+    { name: "Deck Tee", category: "T-Shirts" },
+    { name: "Baggy Jean", category: "Trousers" },
+    { name: "Coach Jacket", category: "Jackets" },
+  ],
+  Y2K: [
+    { name: "Low Rise Trouser", category: "Trousers" },
+    { name: "Baby Tee", category: "T-Shirts" },
+    { name: "Butterfly Knit", category: "Knitwear" },
+  ],
+  Vintage: [
+    { name: "Reissue Tee", category: "T-Shirts" },
+    { name: "Sun-fade Shirt", category: "Shirts" },
+    { name: "Broken-in Pant", category: "Trousers" },
   ],
   Graphic: [
     { name: "Study Tee", category: "T-Shirts" },
     { name: "Archive Print Hoodie", category: "Hoodies" },
-    { name: "Mark Long Sleeve", category: "T-Shirts" },
-    { name: "Poster Sweat", category: "Knitwear" },
   ],
-  Utility: [
-    { name: "Cargo Trouser", category: "Trousers" },
-    { name: "Field Jacket", category: "Jackets" },
-    { name: "Tool Vest", category: "Outerwear" },
-    { name: "Pocket Shirt", category: "Shirts" },
+  Minimal: [
+    { name: "Clean Crew", category: "Knitwear" },
+    { name: "Straight Trouser", category: "Trousers" },
   ],
-  Outdoor: [
-    { name: "Trail Anorak", category: "Jackets" },
-    { name: "Track Pant", category: "Trousers" },
-    { name: "Packable Shell", category: "Jackets" },
-    { name: "Camp Fleece", category: "Knitwear" },
+  Techwear: [
+    { name: "Shell Jacket", category: "Jackets" },
+    { name: "Zip Cargo", category: "Trousers" },
   ],
   Workwear: [
     { name: "Double Knee Pant", category: "Trousers" },
     { name: "Chore Coat", category: "Jackets" },
-    { name: "Shop Shirt", category: "Shirts" },
-    { name: "Duck Canvas Vest", category: "Outerwear" },
+  ],
+  Outdoor: [
+    { name: "Trail Anorak", category: "Jackets" },
+    { name: "Packable Shell", category: "Jackets" },
   ],
   Archive: [
     { name: "Archive Knit", category: "Knitwear" },
-    { name: "Reissue Tee", category: "T-Shirts" },
     { name: "Sample Trouser", category: "Trousers" },
-    { name: "Deadstock Shirt", category: "Shirts" },
-  ],
-  Skate: [
-    { name: "Baggy Jean", category: "Trousers" },
-    { name: "Deck Tee", category: "T-Shirts" },
-    { name: "Zip Hoodie", category: "Hoodies" },
-    { name: "Coach Jacket", category: "Jackets" },
   ],
 };
 
 const FAKE_BRANDS: Record<StyleName, { name: string; location: string; description: string }> = {
-  Techwear: {
-    name: "Kuro Desk",
-    location: "Amsterdam",
-    description: "Functional layers for testing Syllis discovery.",
-  },
-  Washed: {
-    name: "North Atelier",
-    location: "London",
-    description: "Washed essentials used as fake catalogue filler.",
-  },
-  Minimal: {
-    name: "Civic Sample",
-    location: "Copenhagen",
-    description: "Quiet silhouettes for layout and ad tests.",
-  },
-  Graphic: {
-    name: "Hours Test",
-    location: "Manchester",
-    description: "Graphic blanks so Discover has something to filter.",
-  },
-  Utility: {
-    name: "Form Work",
-    location: "Leeds",
-    description: "Utility pieces generated for niche density tests.",
-  },
-  Outdoor: {
-    name: "Still Trail",
-    location: "Glasgow",
-    description: "Outdoor layers for sponsored-placement checks.",
-  },
-  Workwear: {
-    name: "Ninth Sample",
-    location: "Leeds",
-    description: "Workwear filler for the catalogue lab.",
-  },
-  Archive: {
-    name: "Forme Archive",
-    location: "Paris",
-    description: "Archive-shaped fakes, not real stock.",
-  },
-  Skate: {
-    name: "Deck Room",
-    location: "London",
-    description: "Skate silhouettes for filter and ad tests.",
-  },
+  Streetwear: { name: "North Atelier", location: "London", description: "Streetwear filler for catalogue tests." },
+  Skate: { name: "Deck Room", location: "London", description: "Skate silhouettes for filter tests." },
+  Y2K: { name: "Hours Test", location: "Manchester", description: "Y2K filler for Discover filters." },
+  Vintage: { name: "Forme Archive", location: "Paris", description: "Vintage-shaped fakes, not real stock." },
+  Graphic: { name: "Mark Room", location: "Manchester", description: "Graphic blanks for layout tests." },
+  Minimal: { name: "Civic Sample", location: "Copenhagen", description: "Quiet silhouettes for layout tests." },
+  Techwear: { name: "Kuro Desk", location: "Amsterdam", description: "Functional layers for testing." },
+  Workwear: { name: "Ninth Sample", location: "Leeds", description: "Workwear filler for the catalogue lab." },
+  Outdoor: { name: "Still Trail", location: "Glasgow", description: "Outdoor layers for placement checks." },
+  Archive: { name: "Forme Sample", location: "Paris", description: "Archive-shaped fakes, not real stock." },
 };
 
 function pick<T>(list: T[], index: number) {
@@ -229,7 +184,7 @@ export function buildFakeCatalogue(niches: StyleName[], count: number, includeAd
           id: "seed-ad-all",
           title: `${products[0]?.label ?? "Syllis Test"} — All Syllis`,
           brand: products[0]?.label ?? "Syllis Test",
-          image: products[0]?.image ?? IMAGES.Washed[0],
+          image: products[0]?.image ?? IMAGES.Streetwear[0],
           placement: "All" as const,
           days: 7 as const,
           base_price: 100,

@@ -73,7 +73,7 @@ export async function POST(request: Request) {
 
   const id = `p-${Date.now().toString(36)}`;
   const productSlug = `${slug}-${slugify(name)}-${id.slice(-4)}`;
-  const style = isStyleName(String(body.style ?? "")) ? String(body.style) : "Minimal";
+  const style = isStyleName(String(body.style ?? "")) ? String(body.style) : "Streetwear";
   const row = {
     id,
     slug: productSlug,

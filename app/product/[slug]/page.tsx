@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
+import { paymentsLive } from "@/lib/billing";
 import { findLiveProduct } from "@/lib/catalogue";
+import { brandSaleState } from "@/lib/connect";
 import { dropForProduct } from "@/lib/drops";
 import { Track } from "@/components/track";
 import { ProductActions } from "@/components/product-actions";
@@ -15,6 +17,8 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   if (!product) notFound();
 
   const drop = dropForProduct(product.id);
+  const sale = await brandSaleState(product.brandSlug);
+  const inStock = product.stock == null || product.stock > 0;
   const brandSlug =
     product.brandSlug ||
     product.label
@@ -66,7 +70,13 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
               <span>Stock</span>
               <span>{product.stock ?? "—"} units</span>
             </div>
-            <ProductActions product={product} brandSlug={brandSlug} dropId={drop?.id ?? null} />
+            <ProductActions
+              product={product}
+              brandSlug={brandSlug}
+              dropId={drop?.id ?? null}
+              canBuy={sale.sellable && inStock}
+              paymentsOn={paymentsLive()}
+            />
           </div>
         </div>
       </div>

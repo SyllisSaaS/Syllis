@@ -15,4 +15,5 @@ export const T = {
   analyticsResets: "syllis_analytics_resets",
   adBookings: "syllis_ad_bookings",
   stripePrices: "syllis_stripe_prices",
+  orders: "syllis_orders",
 } as const;

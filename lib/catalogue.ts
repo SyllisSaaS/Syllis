@@ -1,7 +1,7 @@
 import { cache } from "react";
 import type { Ad, Brand, CatalogueSource, Collection, Product } from "./data";
 import { clampFocus } from "./appearance";
-import { demoAds, demoBrands, demoProducts, slugify, styles } from "./data";
+import { demoAds, demoBrands, demoProducts, normalizeStyle, slugify, styles } from "./data";
 import { createClient } from "./supabase/server";
 import { createServiceClient } from "./supabase/service";
 import { T } from "./tables";
@@ -73,7 +73,7 @@ function mapProduct(row: Record<string, unknown>): AdminProduct {
     label: String(row.label),
     price: Number(row.price),
     category: String(row.category ?? "Apparel"),
-    style: String(row.style ?? "Minimal"),
+    style: normalizeStyle(String(row.style ?? "Streetwear")) ?? "Streetwear",
     badge: (row.badge as string | null) || undefined,
     image: String(row.image ?? ""),
     description: String(row.description ?? ""),
@@ -88,13 +88,19 @@ function mapProduct(row: Record<string, unknown>): AdminProduct {
   };
 }
 
+function mapPlacement(value: unknown): Ad["placement"] {
+  const raw = String(value ?? "All");
+  if (raw === "All" || raw === "Brand" || raw === "Drop") return raw;
+  return normalizeStyle(raw) ?? "All";
+}
+
 function mapAd(row: Record<string, unknown>): AdminAd {
   return {
     id: String(row.id),
     title: String(row.title),
     brand: String(row.brand),
     image: String(row.image ?? ""),
-    placement: (row.placement as Ad["placement"]) || "All",
+    placement: mapPlacement(row.placement),
     days: row.days === 7 ? 7 : 3,
     basePrice: Number(row.base_price ?? 100),
     productSlug: (row.product_slug as string | null) || undefined,

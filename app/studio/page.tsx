@@ -1,8 +1,11 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { getProfile } from "@/lib/auth";
+import { saleTakeRate } from "@/lib/connect";
 import { canUseStudio, profileEntitlements } from "@/lib/profile";
 import { StudioAds } from "@/components/studio-ads";
+import { StudioOrders } from "@/components/studio-orders";
+import { StudioPayouts } from "@/components/studio-payouts";
 import { StudioPlan } from "@/components/studio-plan";
 import { StudioProfile } from "@/components/studio-profile";
 import { StudioProducts } from "@/components/studio-products";
@@ -11,10 +14,10 @@ import { AnalyticsDashboard } from "@/components/analytics-dashboard";
 export default async function StudioPage({
   searchParams,
 }: {
-  searchParams: Promise<{ ad?: string; welcome?: string }>;
+  searchParams: Promise<{ ad?: string; welcome?: string; connect?: string }>;
 }) {
   const profile = await getProfile();
-  const { ad, welcome } = await searchParams;
+  const { ad, welcome, connect } = await searchParams;
 
   if (!profile) {
     return (
@@ -64,8 +67,7 @@ export default async function StudioPage({
           <p className="mt-4 max-w-xl text-sm text-[color:var(--muted)]">
             {access.entitlements.name} plan is live on this account
             {profile.founding_brand ? " · founding brand" : ""}
-            . Payments are paused, so nothing will be charged. Set your public look, upload pieces,
-            then check how they perform.
+            . Set your public look, upload pieces, then set up payouts so shoppers can buy on Syllis.
           </p>
         </div>
         <div className="flex flex-wrap gap-3">
@@ -88,6 +90,15 @@ export default async function StudioPage({
         <p className="mt-8 text-sm">Ad payment received. It goes live when the webhook confirms — usually a few seconds.</p>
       )}
       {ad === "cancel" && <p className="mt-8 text-sm text-[color:var(--muted)]">Checkout was cancelled. Nothing was charged.</p>}
+      {connect === "return" && (
+        <p className="mt-8 border hairline p-4 text-sm">
+          Stripe sent you back. If payouts still say not ready, finish any leftover checks — they
+          usually clear in a minute.
+        </p>
+      )}
+      {connect === "refresh" && (
+        <p className="mt-8 border hairline p-4 text-sm">That setup link expired. Use Set up payouts again.</p>
+      )}
 
       <div className="mt-12 grid gap-4 md:grid-cols-3">
         <div className="panel border hairline p-6">
@@ -117,6 +128,14 @@ export default async function StudioPage({
 
       <div className="mt-8">
         <StudioProfile customBanner={access.entitlements.customBanner} />
+      </div>
+
+      <div className="mt-8">
+        <StudioPayouts takeRate={saleTakeRate(access.plan)} />
+      </div>
+
+      <div className="mt-8">
+        <StudioOrders />
       </div>
 
       <div className="mt-8">

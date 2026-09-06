@@ -1,12 +1,14 @@
 import { NextResponse } from "next/server";
 import { getProfile } from "@/lib/auth";
 import { paymentsLive } from "@/lib/billing";
+import { brandSaleState, ORDERS_SQL_HINT, poundsToPence, saleTakeRate, splitSalePence } from "@/lib/connect";
 import { isStripeConfigured, siteUrl } from "@/lib/env";
 import { foundingOffer } from "@/lib/founding";
 import { isBrandPlan, isPlanId, TRIAL_DAYS, type PlanId } from "@/lib/plans";
 import { foundingCheckoutDiscount, getStripe, resolvePriceId } from "@/lib/stripe";
 import { adSlotCap, adSurfaceLabel, isAdDays, isAdPlacement, quoteAdPence } from "@/lib/ads";
 import { countRenewals, expireAndPromoteAds, liveAdCount } from "@/lib/ads-fulfill";
+import { isMissingColumn } from "@/lib/appearance";
 import { T } from "@/lib/tables";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
@@ -27,9 +29,6 @@ export async function POST(request: Request) {
   }
 
   const profile = await getProfile();
-  if (!profile) {
-    return NextResponse.json({ error: "Log in first." }, { status: 401 });
-  }
 
   const stripe = getStripe();
   if (!stripe) {
@@ -50,6 +49,105 @@ export async function POST(request: Request) {
     body = (await request.json()) as typeof body;
   } catch {
     body = {};
+  }
+
+  if (body.kind === "product") {
+    const slug = String(body.productSlug ?? "").trim();
+    if (!slug) return NextResponse.json({ error: "Missing product." }, { status: 400 });
+
+    const supabase = createServiceClient() ?? (await createClient());
+    if (!supabase) return NextResponse.json({ error: "Database is not configured." }, { status: 503 });
+
+    const { data: product } = await supabase.from(T.products).select("*").eq("slug", slug).eq("live", true).maybeSingle();
+    if (!product) return NextResponse.json({ error: "That piece is not for sale." }, { status: 404 });
+    if (product.stock != null && Number(product.stock) <= 0) {
+      return NextResponse.json({ error: "This piece is sold out." }, { status: 409 });
+    }
+
+    const sale = await brandSaleState(product.brand_slug);
+    if (!sale.payoutsReady || !sale.connectId) {
+      return NextResponse.json({ error: "This label is not set up to take Syllis checkout yet." }, { status: 400 });
+    }
+
+    const { data: owner } = sale.brandId
+      ? await supabase.from(T.brands).select("owner_id").eq("id", sale.brandId).maybeSingle()
+      : { data: null };
+    const ownerId = owner?.owner_id ? String(owner.owner_id) : null;
+    let sellerPlan: PlanId = "starter";
+    if (ownerId) {
+      const { data: seller } = await supabase.from(T.profiles).select("plan").eq("id", ownerId).maybeSingle();
+      if (isPlanId(seller?.plan) && isBrandPlan(seller.plan)) sellerPlan = seller.plan;
+    }
+
+    const amountPence = poundsToPence(Number(product.price));
+    if (amountPence < 100) return NextResponse.json({ error: "Price must be at least £1." }, { status: 400 });
+    const split = splitSalePence(amountPence, sellerPlan);
+
+    const { data: order, error } = await supabase
+      .from(T.orders)
+      .insert({
+        product_id: product.id,
+        product_slug: product.slug,
+        product_name: product.name,
+        brand_id: sale.brandId,
+        brand_slug: product.brand_slug,
+        brand_user_id: ownerId,
+        buyer_user_id: profile?.id ?? null,
+        amount_pence: amountPence,
+        platform_fee_pence: split.platformFeePence,
+        brand_pence: split.brandPence,
+        take_rate: split.take,
+        currency: "gbp",
+        status: "pending",
+      })
+      .select("*")
+      .single();
+
+    if (error || !order) {
+      return NextResponse.json(
+        { error: isMissingColumn(error) ? ORDERS_SQL_HINT : error?.message || "Could not start the order." },
+        { status: 400 }
+      );
+    }
+
+    const session = await stripe.checkout.sessions.create({
+      mode: "payment",
+      customer_email: profile?.email ?? undefined,
+      line_items: [
+        {
+          quantity: 1,
+          price_data: {
+            currency: "gbp",
+            unit_amount: amountPence,
+            product_data: {
+              name: `${product.label} — ${product.name}`,
+              description: `Sold on Syllis. Brand receives ${Math.round((1 - split.take) * 100)}% after they ship.`,
+              images: product.image ? [product.image] : undefined,
+            },
+          },
+        },
+      ],
+      shipping_address_collection: {
+        allowed_countries: ["GB", "IE", "FR", "DE", "NL", "ES", "IT", "US", "CA", "AU"],
+      },
+      phone_number_collection: { enabled: true },
+      metadata: {
+        kind: "product",
+        orderId: order.id,
+        productId: product.id,
+        brandId: sale.brandId ?? "",
+        take: String(saleTakeRate(sellerPlan)),
+      },
+      success_url: `${siteUrl()}/order/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${siteUrl()}/product/${product.slug}?checkout=cancel`,
+    });
+
+    await supabase.from(T.orders).update({ stripe_session_id: session.id }).eq("id", order.id);
+    return NextResponse.json({ url: session.url });
+  }
+
+  if (!profile) {
+    return NextResponse.json({ error: "Log in first." }, { status: 401 });
   }
 
   if (body.kind === "ad") {

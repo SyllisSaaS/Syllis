@@ -17,9 +17,9 @@ function ShopperGuide({ asYou }: { asYou: boolean }) {
             Discover
           </Link>{" "}
           is where the pieces live. <strong className="text-[color:var(--text)]">All Syllis</strong>{" "}
-          is every niche together. Pick <strong className="text-[color:var(--text)]">Washed</strong>,{" "}
-          <strong className="text-[color:var(--text)]">Techwear</strong> and the rest to stay in one
-          lane.
+          is every niche together. Pick <strong className="text-[color:var(--text)]">Streetwear</strong>,{" "}
+          <strong className="text-[color:var(--text)]">Skate</strong>,{" "}
+          <strong className="text-[color:var(--text)]">Y2K</strong> and the rest to stay in one lane.
         </li>
         <li>
           Yellow <strong className="text-[color:var(--text)]">Sponsored</strong> cards are ads. Tap
@@ -77,8 +77,9 @@ function BrandGuide({ forYou }: { forYou: boolean }) {
               dashboard. Change plans from Studio or Pricing.
             </li>
             <li>
-              Your catalogue is set up with Syllis for now. You cannot add pieces yourself yet —
-              once you are verified, we list them for you.
+              Upload pieces in Studio. Set up payouts once — Stripe checks who you are. Shoppers
+              buy on Syllis. Money is held until you add tracking, then the rest (after Syllis
+              keeps 10% / 8% / 6% by plan) goes to your Stripe. You never paste a secret key.
             </li>
             <li>
               Ads you buy can sit on All Syllis, a niche, a brand slot (labels pages), or a drop
@@ -87,9 +88,8 @@ function BrandGuide({ forYou }: { forYou: boolean }) {
               45% for four steps, then it holds.
             </li>
             <li>
-              Your own shop checkout stays on your site. You never paste your shop’s Stripe keys
-              into Syllis. Studio analytics are views, saves and clicks here — not your website’s
-              takings.
+              Sales show up in Studio on their own. Add tracking to release the payout. Refunds
+              and disputes are handled on Syllis, not by pasting another shop’s Stripe keys.
             </li>
           </>
         ) : (
@@ -97,10 +97,10 @@ function BrandGuide({ forYou }: { forYou: boolean }) {
             <li>
               Run a label?{" "}
               <Link href="/signup?role=brand" className="underline underline-offset-4">
-                Apply as a brand
+                Sign up as a brand
               </Link>
-              . After you are verified, Studio is where you see how people find you and where you
-              book ad slots.
+              . Studio opens straight away: list pieces, set up payouts, then shoppers can buy on
+              Syllis.
             </li>
             <li>
               Seller plans and ad slots are on{" "}
@@ -184,7 +184,8 @@ function OperatorGuide() {
           Payments is where you coordinate Stripe: keys status, create the four monthly products
           (Early, Starter, Growth, Premium), comp a test ad, and see bookings plus ledger. Paste
           `supabase/payments.sql` if that tab errors. Point a webhook at `/api/stripe/webhook` for
-          `checkout.session.completed`, `customer.subscription.*`, and `invoice.paid`. Use Stripe
+          `checkout.session.completed`, `customer.subscription.*`, `invoice.paid`,
+          `charge.refunded`, `charge.dispute.created`, and `account.updated`. Use Stripe
           CLI locally (`stripe listen --forward-to localhost:3000/api/stripe/webhook`). Keep
           `SUPABASE_SERVICE_ROLE_KEY` set so the webhook can write ads. Do not turn on Stripe Tax
           until you have a registration. Enable Customer Portal in the Dashboard so members can
@@ -197,8 +198,8 @@ function OperatorGuide() {
           <em>your</em> income, not a brand’s own shop.
         </li>
         <li>
-          Never ask a brand for their secret Stripe key. Connect is later, if they sell through
-          you.
+          Never ask a brand for their secret Stripe key. They onboard through Studio → Payouts.
+          Paste `supabase/orders.sql` so orders and Connect columns exist.
         </li>
       </ul>
     </section>

@@ -2,6 +2,18 @@
 
 Give this file to the next coding agent. It is the source of truth for where the work is.
 
+## Chat recap (keep this short)
+
+Oliver’s live app is `/Users/oliverday/Desktop/syllis-v2 live`, GitHub `SyllisSaaS/Syllis` on `main`, Colour + dark. Shared Supabase `wgqclbcubudptljjknik` — only `syllis_*` tables. Admin is `ADMIN_EMAIL`, not hardcoded.
+
+Shipped: accounts, admin, founding inbox (not a Studio gate), brand Studio (PFP, colour vs photo banner by plan, product upload + drag crop), signup captcha, payments **paused** (`PAYMENTS_ENABLED` off). Brands pick a plan and use those tools immediately. Founding requests go to Admin → Inbox with contact details.
+
+Niches now: Streetwear, Skate, Y2K, Vintage, Graphic, Minimal, Techwear, Workwear, Outdoor, Archive. Old “Washed” → Streetwear, “Utility” → Workwear.
+
+Sales path is built, payments still **paused** until `PAYMENTS_ENABLED=true`. Do **not** let brands paste Stripe keys. Connect plan: `connect-recommend-plan.md`. Shopper pays Syllis → hold until tracking → transfer brand share (Starter 10% / Growth 8% / Premium 6%). Run `supabase/orders.sql` (and `appearance.sql` for photos). Webhook also needs `charge.refunded`, `charge.dispute.created`, `account.updated`.
+
+Vercel needs the public Supabase env vars; `.env.local` is not on GitHub.
+
 **Repo:** `/Users/oliverday/Desktop/syllis-v2 live`  
 **Product:** Syllis — independent fashion discovery  
 **Owner:** Oliver Day (`oliverday015@gmail.com`)  
@@ -118,26 +130,23 @@ Admin accounts always receive Premium entitlements (`profileEntitlements`).
 ## How Oliver tests brands
 
 1. Stay logged in as admin on `/admin`.
-2. Catalogue → load demo, seed fakes, or add a real brand. Hide/Remove anything you do not want public.
-3. Test lab → Create test brand → copy credentials.
-4. Private window → `/login` → `/studio`.
-5. On admin People, set the brand to Starter / Growth / Premium and refresh studio to see each analytics tier.
-6. Or: private window `/signup?role=brand` → admin Applications → Approve → `/studio`.
-
-Studio is locked until `verification_status === "verified"`.
+2. Catalogue or Studio can add pieces. Hide/Remove anything you do not want public.
+3. Test lab → Create test brand → copy credentials → private window `/login` → `/studio`.
+4. Or: `/signup?role=brand` — Studio opens immediately. Founding is Inbox-only.
+5. In Studio, the Plan block switches Starter / Growth / Premium while billing is paused.
 
 ---
 
 ## Still demo / next
 
-- Brand self-serve product CMS is not built (admin lists for them via Catalogue).
+- Connect + orders are in the code. Checkout stays off until `PAYMENTS_ENABLED=true`. Paste `supabase/orders.sql`.
 - No stylist booking marketplace.
-- Founding Stripe coupons do not auto-roll through the full year.
+- Founding discounts reserved until billing opens.
 - Events/reservations fall back to memory if `syllis_*` RLS fails.
-- Drops still use the old hardcoded drop windows, and only appear if those product ids are live.
-- Speed: `next dev` compiles each route once; production `next start` is faster.
+- Drops still use old hardcoded windows.
+- Photos need `supabase/appearance.sql` if columns are missing.
 
-Suggested next: brand listing UI in Studio; stylist directory with reviews.
+Suggested next: run `orders.sql`, finish a test-brand Connect onboarding in Stripe test mode, then turn payments on.
 
 Help: `/help` is role-aware. Shoppers/brands/stylists get “you” copy. Operator (admin, Stripe keys, Test lab, Payments) is admin-only.
 

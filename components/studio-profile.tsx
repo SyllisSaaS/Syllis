@@ -117,7 +117,7 @@ export function StudioProfile({ customBanner }: { customBanner: boolean }) {
             <label className="grid gap-2 text-xs">
               Niche
               <select
-                value={brand.niche || "Minimal"}
+                value={brand.niche || "Streetwear"}
                 onChange={(e) => setBrand({ ...brand, niche: e.target.value })}
                 className="border hairline bg-transparent px-3 py-3 outline-none"
               >

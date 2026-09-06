@@ -22,8 +22,9 @@ type Piece = {
 const empty = {
   name: "",
   price: "",
+  stock: "",
   category: "Apparel",
-  style: "Minimal",
+  style: "Streetwear",
   description: "",
   image: "",
   image_x: 50,
@@ -130,10 +131,10 @@ export function StudioProducts() {
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               className="border hairline bg-transparent px-3 py-3 outline-none"
-              placeholder="Washed heavy zip"
+              placeholder="Heavy zip"
             />
           </label>
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <label className="grid gap-2 text-xs">
               Price £
               <input
@@ -144,6 +145,17 @@ export function StudioProducts() {
                 value={form.price}
                 onChange={(e) => setForm({ ...form, price: e.target.value })}
                 className="border hairline bg-transparent px-3 py-3 outline-none"
+              />
+            </label>
+            <label className="grid gap-2 text-xs">
+              Stock
+              <input
+                type="number"
+                min="0"
+                value={form.stock}
+                onChange={(e) => setForm({ ...form, stock: e.target.value })}
+                className="border hairline bg-transparent px-3 py-3 outline-none"
+                placeholder="Leave blank if unlimited"
               />
             </label>
             <label className="grid gap-2 text-xs">

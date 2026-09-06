@@ -27,7 +27,7 @@ export async function ensureStudioBrand(supabase: SupabaseClient, profile: Profi
     id: slug,
     slug,
     name,
-    niche: "Minimal",
+    niche: "Streetwear",
     location: "",
     description: "",
     image: "",

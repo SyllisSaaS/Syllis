@@ -3,6 +3,7 @@ import type Stripe from "stripe";
 import { isBrandPlan, isPlanId, type PlanId } from "@/lib/plans";
 import { expireAndPromoteAds, fulfillAdBooking } from "@/lib/ads-fulfill";
 import { applyPlanCheckoutSession } from "@/lib/stripe-fulfill";
+import { fulfillProductSession, markOrderDisputed, markOrderRefunded, syncConnectAccount } from "@/lib/orders-fulfill";
 import { getStripe, planFromPriceId, storedPriceMap } from "@/lib/stripe";
 import { T } from "@/lib/tables";
 import { createClient } from "@/lib/supabase/server";
@@ -77,7 +78,9 @@ export async function POST(request: Request) {
 
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
-    if (session.metadata?.kind === "ad") {
+    if (session.metadata?.kind === "product") {
+      await fulfillProductSession(session);
+    } else if (session.metadata?.kind === "ad") {
       await fulfillAdBooking({
         bookingId: session.metadata.bookingId,
         sessionId: session.id,
@@ -130,6 +133,22 @@ export async function POST(request: Request) {
         stripe_subscription_id: null,
       });
     }
+  }
+
+  if (event.type === "charge.refunded") {
+    const charge = event.data.object as Stripe.Charge;
+    await markOrderRefunded(charge.id);
+  }
+
+  if (event.type === "charge.dispute.created") {
+    const dispute = event.data.object as Stripe.Dispute;
+    const chargeId = typeof dispute.charge === "string" ? dispute.charge : dispute.charge?.id;
+    if (chargeId) await markOrderDisputed(chargeId);
+  }
+
+  if (event.type === "account.updated") {
+    const account = event.data.object as { id?: string };
+    if (account.id) await syncConnectAccount(account.id);
   }
 
   if (event.type === "invoice.paid") {

@@ -172,7 +172,7 @@ export default function PricingPage() {
                   {adPricing.slots.niche} slot each
                 </span>
               </div>
-              <p className="mt-2 text-xs text-[color:var(--muted)]">Only on that niche page — Washed, Techwear, and so on.</p>
+              <p className="mt-2 text-xs text-[color:var(--muted)]">Only on that niche page — Streetwear, Skate, Y2K, and so on.</p>
               <div className="mt-5 grid grid-cols-2 gap-3">
                 <div className="bg-[color:var(--surface)] p-4">
                   <p className="eyebrow">3 days</p>

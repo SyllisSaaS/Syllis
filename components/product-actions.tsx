@@ -11,13 +11,34 @@ export function ProductActions({
   product,
   brandSlug,
   dropId,
+  canBuy,
+  paymentsOn,
 }: {
   product: Product;
   brandSlug: string;
   dropId: string | null;
+  canBuy: boolean;
+  paymentsOn: boolean;
 }) {
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+
+  async function buy() {
+    setBusy(true);
+    setMessage("");
+    const response = await fetch("/api/stripe/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ kind: "product", productSlug: product.slug }),
+    });
+    const payload = (await response.json()) as { url?: string; error?: string };
+    if (payload.url) {
+      window.location.href = payload.url;
+      return;
+    }
+    setMessage(payload.error || "Could not start checkout.");
+    setBusy(false);
+  }
 
   async function reserve() {
     if (!dropId) return;
@@ -35,9 +56,18 @@ export function ProductActions({
 
   return (
     <div className="mt-8 grid gap-3">
+      {canBuy ? (
+        <button type="button" className="button button-dark w-full" disabled={busy} onClick={() => void buy()}>
+          {busy ? "Opening checkout..." : "Buy on Syllis"}
+        </button>
+      ) : paymentsOn ? (
+        <p className="text-xs text-[color:var(--muted)]">This label is not taking Syllis checkout yet.</p>
+      ) : (
+        <p className="text-xs text-[color:var(--muted)]">Syllis checkout is paused. Nothing will be charged.</p>
+      )}
       <button
         type="button"
-        className="button button-dark w-full"
+        className="button button-quiet w-full"
         data-cursor="SHOP"
         onClick={() => trackEvent("outbound_click", { productId: product.id, brandSlug })}
       >

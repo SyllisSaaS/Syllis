@@ -38,23 +38,37 @@ export type Brand = {
 };
 
 export const styles = [
-  "Techwear",
-  "Washed",
-  "Minimal",
-  "Graphic",
-  "Utility",
-  "Outdoor",
-  "Workwear",
-  "Archive",
+  "Streetwear",
   "Skate",
+  "Y2K",
+  "Vintage",
+  "Graphic",
+  "Minimal",
+  "Techwear",
+  "Workwear",
+  "Outdoor",
+  "Archive",
 ] as const;
 
 export type StyleName = (typeof styles)[number];
 export type AdPlacement = "All" | "Brand" | "Drop" | StyleName;
 export type CatalogueSource = "demo" | "seed" | "real";
 
+const STYLE_ALIASES: Record<string, StyleName> = {
+  washed: "Streetwear",
+  utility: "Workwear",
+  sk8: "Skate",
+  skate: "Skate",
+  y2k: "Y2K",
+};
+
 export function isStyleName(value: string): value is StyleName {
   return (styles as readonly string[]).includes(value);
+}
+
+export function normalizeStyle(value: string): StyleName | null {
+  if (isStyleName(value)) return value;
+  return STYLE_ALIASES[value.trim().toLowerCase()] ?? null;
 }
 
 export function slugify(value: string) {
@@ -92,7 +106,7 @@ export const demoProducts: Product[] = [
     label: "North / 00",
     price: 92,
     category: "Hoodies",
-    style: "Washed",
+    style: "Streetwear",
     badge: "Editor's pick",
     image: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=1200&q=85",
     description: "A heavyweight everyday layer with a faded finish and relaxed shape. Designed to look better with wear.",
@@ -107,7 +121,7 @@ export const demoProducts: Product[] = [
     label: "Kuro Supply",
     price: 148,
     category: "Jackets",
-    style: "Utility",
+    style: "Workwear",
     badge: "New",
     image: "https://images.unsplash.com/photo-1544966503-7cc5ac882d5f?auto=format&fit=crop&w=1200&q=85",
     description: "Lightweight technical outerwear with functional pocketing and a clean, understated profile.",
@@ -122,7 +136,7 @@ export const demoProducts: Product[] = [
     label: "Ninth Form",
     price: 84,
     category: "Trousers",
-    style: "Utility",
+    style: "Workwear",
     image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=1200&q=85",
     description: "A straight cargo silhouette in washed cotton with considered utility details.",
     retailer: "Ninth Form",
@@ -215,7 +229,7 @@ export const demoProducts: Product[] = [
     label: "Common Hours",
     price: 54,
     category: "T-Shirts",
-    style: "Washed",
+    style: "Streetwear",
     image: "https://images.unsplash.com/photo-1618354691373-d851c5c3a990?auto=format&fit=crop&w=1200&q=85",
     description: "Soft long-sleeve jersey with a worn-in pigment finish.",
     retailer: "Common Hours",
@@ -254,7 +268,7 @@ export const demoBrands: Brand[] = [
     id: "b1",
     slug: "north-00",
     name: "North / 00",
-    niche: "Washed streetwear",
+    niche: "Streetwear",
     location: "London",
     description: "Heavyweight essentials, washed finishes and quiet graphics.",
     image: "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=1200&q=85",
@@ -265,7 +279,7 @@ export const demoBrands: Brand[] = [
     id: "b2",
     slug: "kuro-supply",
     name: "Kuro Supply",
-    niche: "Technical streetwear",
+    niche: "Techwear",
     location: "Amsterdam",
     description: "Functional layers with a stripped-back technical language.",
     image: "https://images.unsplash.com/photo-1544966503-7cc5ac882d5f?auto=format&fit=crop&w=1200&q=85",
@@ -276,7 +290,7 @@ export const demoBrands: Brand[] = [
     id: "b3",
     slug: "morrow-objects",
     name: "Morrow Objects",
-    niche: "Modern utility",
+    niche: "Workwear",
     location: "Copenhagen",
     description: "Modular garments designed for everyday movement.",
     image: "https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?auto=format&fit=crop&w=1200&q=85",
@@ -287,7 +301,7 @@ export const demoBrands: Brand[] = [
     id: "b4",
     slug: "common-hours",
     name: "Common Hours",
-    niche: "Graphic essentials",
+    niche: "Graphic",
     location: "Manchester",
     description: "Heavy cotton, considered graphics and relaxed proportions.",
     image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85",
@@ -346,7 +360,7 @@ export const demoAds: Ad[] = [
     title: "North / 00 — Washed Drop",
     brand: "North / 00",
     image: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=1600&q=85",
-    placement: "Washed",
+    placement: "Streetwear",
     days: 7,
     basePrice: 80,
     productSlug: "washed-heavy-zip",
