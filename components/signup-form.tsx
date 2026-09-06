@@ -57,7 +57,9 @@ export function SignupForm() {
     setError("");
 
     if (!isSupabaseConfigured()) {
-      setError("Accounts need Supabase. Add NEXT_PUBLIC_SUPABASE_URL and a publishable key.");
+      setError(
+        "This live site still cannot see the Supabase keys. In Vercel, add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY, then Redeploy. No database password is needed."
+      );
       setLoading(false);
       return;
     }

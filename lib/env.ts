@@ -1,17 +1,19 @@
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+const supabasePublishableKey =
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  "";
+
 export function isSupabaseConfigured() {
-  return Boolean(
-    process.env.NEXT_PUBLIC_SUPABASE_URL &&
-      (process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
-  );
+  return Boolean(supabaseUrl && supabasePublishableKey);
+}
+
+export function supabaseUrlValue() {
+  return supabaseUrl;
 }
 
 export function supabaseKey() {
-  return (
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-    ""
-  );
+  return supabasePublishableKey;
 }
 
 export function isStripeConfigured() {
