@@ -405,3 +405,23 @@ create policy "syllis bookings update self" on public.syllis_ad_bookings
 drop policy if exists "syllis stripe prices read" on public.syllis_stripe_prices;
 create policy "syllis stripe prices read" on public.syllis_stripe_prices
   for select using (true);
+
+-- Appearance + brand ownership. Same as supabase/appearance.sql.
+alter table public.syllis_profiles add column if not exists avatar_url text;
+alter table public.syllis_profiles add column if not exists avatar_x numeric not null default 50;
+alter table public.syllis_profiles add column if not exists avatar_y numeric not null default 50;
+alter table public.syllis_profiles add column if not exists bio text;
+
+alter table public.syllis_brands add column if not exists owner_id uuid;
+alter table public.syllis_brands add column if not exists avatar_url text;
+alter table public.syllis_brands add column if not exists avatar_x numeric not null default 50;
+alter table public.syllis_brands add column if not exists avatar_y numeric not null default 50;
+alter table public.syllis_brands add column if not exists banner_mode text not null default 'color';
+alter table public.syllis_brands add column if not exists banner_color text not null default '#141414';
+alter table public.syllis_brands add column if not exists banner_url text;
+alter table public.syllis_brands add column if not exists banner_x numeric not null default 50;
+alter table public.syllis_brands add column if not exists banner_y numeric not null default 50;
+
+alter table public.syllis_products add column if not exists owner_id uuid;
+alter table public.syllis_products add column if not exists image_x numeric not null default 50;
+alter table public.syllis_products add column if not exists image_y numeric not null default 50;

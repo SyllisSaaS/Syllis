@@ -34,8 +34,32 @@ export default async function BrandsPage() {
             {brands.map((brand) => (
               <article id={brand.slug} key={brand.id} className="scroll-mt-24">
                 <Link href={`/brands/${brand.slug}`} className="block">
-                  <div className="aspect-[4/5] overflow-hidden bg-[color:var(--surface)]">
-                    <img src={brand.image} alt="" className="h-full w-full object-cover" />
+                  <div
+                    className="aspect-[4/5] overflow-hidden bg-[color:var(--surface)]"
+                    style={{
+                      background:
+                        brand.bannerMode === "image" || brand.image
+                          ? undefined
+                          : brand.bannerColor || "#141414",
+                    }}
+                  >
+                    {(brand.bannerMode === "image" ? brand.bannerUrl || brand.image : brand.image) ? (
+                      <img
+                        src={brand.bannerUrl || brand.image}
+                        alt=""
+                        className="h-full w-full object-cover"
+                        style={{
+                          objectPosition: `${brand.bannerX ?? 50}% ${brand.bannerY ?? 50}%`,
+                        }}
+                      />
+                    ) : brand.avatarUrl ? (
+                      <img
+                        src={brand.avatarUrl}
+                        alt=""
+                        className="h-full w-full object-cover"
+                        style={{ objectPosition: `${brand.avatarX ?? 50}% ${brand.avatarY ?? 50}%` }}
+                      />
+                    ) : null}
                   </div>
                 </Link>
                 <div className="border-b hairline py-4">

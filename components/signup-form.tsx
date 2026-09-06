@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { ArrowRight } from "lucide-react";
@@ -42,14 +42,32 @@ export function SignupForm() {
   const [instagram, setInstagram] = useState("");
   const [portfolio, setPortfolio] = useState("");
   const [bio, setBio] = useState("");
-  const [foundingBrand, setFoundingBrand] = useState(true);
-  const [foundingMember, setFoundingMember] = useState(true);
+  const [foundingBrand, setFoundingBrand] = useState(false);
+  const [foundingMember, setFoundingMember] = useState(false);
+  const [website, setWebsite] = useState("");
+  const [phone, setPhone] = useState("");
   const [acceptedLegal, setAcceptedLegal] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [done, setDone] = useState<"session" | "email" | null>(null);
+  const [captchaQuestion, setCaptchaQuestion] = useState("Loading check…");
+  const [captchaToken, setCaptchaToken] = useState("");
+  const [captchaAnswer, setCaptchaAnswer] = useState("");
+  const [honeypot, setHoneypot] = useState("");
+
+  async function refreshCaptcha() {
+    const res = await fetch("/api/account/captcha");
+    const data = (await res.json()) as { question?: string; token?: string };
+    setCaptchaQuestion(data.question || "What is 2 + 2?");
+    setCaptchaToken(data.token || "");
+    setCaptchaAnswer("");
+  }
+
+  useEffect(() => {
+    void refreshCaptcha();
+  }, []);
 
   async function handleSignup(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -64,8 +82,26 @@ export function SignupForm() {
       return;
     }
 
+    if (honeypot) {
+      setError("Signup could not be completed.");
+      setLoading(false);
+      return;
+    }
+
     if (!acceptedLegal) {
       setError("Please accept the Terms of use and Privacy policy to create an account.");
+      setLoading(false);
+      return;
+    }
+
+    const captchaCheck = await fetch("/api/account/captcha", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token: captchaToken, answer: captchaAnswer }),
+    });
+    if (!captchaCheck.ok) {
+      setError("Solve the check below so we know you are human, then try again.");
+      await refreshCaptcha();
       setLoading(false);
       return;
     }
@@ -88,8 +124,11 @@ export function SignupForm() {
           look,
           founding_brand: role === "brand" && foundingBrand,
           founding_member: role === "shopper" && foundingMember,
-          instagram: role === "stylist" ? instagram : null,
-          portfolio: role === "stylist" ? portfolio : null,
+          brand_name: brandName,
+          website,
+          phone,
+          instagram: instagram || null,
+          portfolio: role === "stylist" ? portfolio : website || null,
           bio: role === "stylist" ? bio : null,
           accepted_legal: true,
         },
@@ -124,6 +163,9 @@ export function SignupForm() {
           brand_slug: brandSlug,
           founding_brand: role === "brand" && foundingBrand,
           founding_member: role === "shopper" && foundingMember,
+          brand_name: brandName,
+          website,
+          phone,
           instagram,
           portfolio,
           bio,
@@ -171,15 +213,15 @@ export function SignupForm() {
         <p className="eyebrow mb-4">Create account</p>
         <h1 className="text-5xl font-semibold tracking-[-.06em]">Join Syllis.</h1>
         <p className="mt-4 text-sm leading-6 text-[color:var(--muted)]">
-          Shoppers start free. Brands and stylists apply — nothing is hardcoded. Verification is
-          reviewed in admin.
+          Shoppers start free. Brands get Studio straight away. Founding-year pricing is a separate
+          request that comes to Syllis — not a paywall.
         </p>
 
         <div className="mt-8 grid grid-cols-3 gap-3">
           {(
             [
               ["shopper", "Shopper", "Browse free. Early is £4/month."],
-              ["brand", "Brand", "Apply to list. Founding year discounts."],
+              ["brand", "Brand", "Open Studio now. No payment yet."],
               ["stylist", "Stylist", "Apply to style. 5% platform cut."],
             ] as const
           ).map(([id, title, copy]) => (
@@ -196,7 +238,7 @@ export function SignupForm() {
           ))}
         </div>
 
-        <form onSubmit={handleSignup} className="panel mt-6 grid gap-5 border hairline p-7">
+        <form onSubmit={handleSignup} className="panel relative mt-6 grid gap-5 border hairline p-7">
           <label className="grid gap-2 text-xs">
             {role === "brand" ? "Your name" : "Name"}
             <input
@@ -224,7 +266,7 @@ export function SignupForm() {
               </label>
 
               <fieldset className="grid gap-2">
-                <legend className="text-xs">Starting plan</legend>
+                <legend className="text-xs">Studio plan — live immediately, no charge yet</legend>
                 <div className="grid gap-2">
                   {brandPlans.map((plan) => (
                     <label
@@ -236,7 +278,7 @@ export function SignupForm() {
                       <span>
                         <span className="font-semibold">{plan.name}</span>
                         <span className="ml-2 text-xs text-[color:var(--muted)]">
-                          £{plan.price}/mo after founding year
+                          {plan.name} tools now · £{plan.price}/mo later
                         </span>
                       </span>
                       <input
@@ -258,12 +300,49 @@ export function SignupForm() {
                   className="mt-1"
                 />
                 <span>
-                  Apply as a founding brand
+                  Apply for founding-year pricing
                   <span className="mt-1 block text-xs text-[color:var(--muted)]">
-                    Month 1 free, then 90% / 75% / 50% / 25% off across the first year.
+                    Studio works now on the plan above. This only sends a request to Syllis. If it is
+                    accepted, founding discounts apply when billing opens.
                   </span>
                 </span>
               </label>
+              {foundingBrand && (
+                <div className="grid gap-4 border hairline p-4">
+                  <p className="text-xs text-[color:var(--muted)]">
+                    How should we reach you about this request?
+                  </p>
+                  <label className="grid gap-2 text-xs">
+                    Instagram
+                    <input
+                      value={instagram}
+                      onChange={(e) => setInstagram(e.target.value)}
+                      className="border hairline bg-transparent px-3 py-3 outline-none"
+                      placeholder="@yourlabel"
+                    />
+                  </label>
+                  <label className="grid gap-2 text-xs">
+                    Website
+                    <input
+                      type="url"
+                      value={website}
+                      onChange={(e) => setWebsite(e.target.value)}
+                      className="border hairline bg-transparent px-3 py-3 outline-none"
+                      placeholder="https://"
+                    />
+                  </label>
+                  <label className="grid gap-2 text-xs">
+                    Phone
+                    <input
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      className="border hairline bg-transparent px-3 py-3 outline-none"
+                      placeholder="Optional"
+                    />
+                  </label>
+                </div>
+              )}
             </>
           )}
 
@@ -347,6 +426,25 @@ export function SignupForm() {
               onChange={(e) => setPassword(e.target.value)}
               className="border hairline bg-transparent px-3 py-3 outline-none"
               placeholder="At least 8 characters"
+            />
+          </label>
+
+          <div aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
+            <label>
+              Website
+              <input tabIndex={-1} autoComplete="off" value={honeypot} onChange={(e) => setHoneypot(e.target.value)} />
+            </label>
+          </div>
+
+          <label className="grid gap-2 text-xs">
+            {captchaQuestion}
+            <input
+              required
+              inputMode="numeric"
+              value={captchaAnswer}
+              onChange={(e) => setCaptchaAnswer(e.target.value)}
+              className="border hairline bg-transparent px-3 py-3 outline-none"
+              placeholder="Type the number"
             />
           </label>
 

@@ -13,6 +13,8 @@ export type Product = {
   featured?: boolean;
   stock?: number;
   brandSlug?: string;
+  imageX?: number;
+  imageY?: number;
 };
 
 export type Brand = {
@@ -25,6 +27,14 @@ export type Brand = {
   image: string;
   featured?: boolean;
   products: number;
+  avatarUrl?: string;
+  avatarX?: number;
+  avatarY?: number;
+  bannerMode?: "color" | "image";
+  bannerColor?: string;
+  bannerUrl?: string;
+  bannerX?: number;
+  bannerY?: number;
 };
 
 export const styles = [

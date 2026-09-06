@@ -116,6 +116,7 @@ export function ProductCard({ product }: { product: Product }) {
             src={product.image}
             alt={product.name}
             className="product-image h-full w-full object-cover"
+            style={{ objectPosition: `${product.imageX ?? 50}% ${product.imageY ?? 50}%` }}
             loading="lazy"
             decoding="async"
           />

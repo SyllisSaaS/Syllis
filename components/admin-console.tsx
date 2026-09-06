@@ -227,7 +227,7 @@ export function AdminConsole() {
             className={`button !min-h-9 !px-3 text-xs capitalize ${tab === id ? "button-dark" : "button-quiet"}`}
             onClick={() => setTab(id)}
           >
-            {id === "lab" ? "Test lab" : id}
+            {id === "lab" ? "Test lab" : id === "applications" ? "Inbox" : id}
           </button>
         ))}
       </div>
@@ -288,7 +288,7 @@ export function AdminConsole() {
                 className={`button !min-h-9 !px-3 text-xs capitalize ${roleFilter === id ? "button-dark" : "button-quiet"}`}
                 onClick={() => setRoleFilter(id)}
               >
-                {id}
+                {id === "applications" ? "Inbox" : id}
               </button>
             ))}
           </div>
@@ -391,44 +391,65 @@ export function AdminConsole() {
 
       {tab === "applications" && (
         <div className="grid gap-3">
+          <p className="text-sm text-[color:var(--muted)]">
+            Founding-year requests and stylist applications. Normal brand signups do not wait here —
+            they already have Studio.
+          </p>
           {applications.length === 0 && (
-            <p className="text-sm text-[color:var(--muted)]">No applications yet.</p>
+            <p className="text-sm text-[color:var(--muted)]">Inbox is empty.</p>
           )}
-          {applications.map((app) => (
-            <article key={app.id} className="panel border hairline p-5">
-              <p className="eyebrow">
-                {app.kind} · {app.status}
-              </p>
-              <pre className="mt-3 overflow-x-auto text-xs text-[color:var(--muted)]">
-                {JSON.stringify(app.payload, null, 2)}
-              </pre>
-              {app.status === "pending" && (
-                <div className="mt-4 flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    className="button button-dark !min-h-8 !px-3 text-xs"
-                    onClick={() => reviewApp(app.id, "approved", app.kind === "brand")}
-                  >
-                    Approve {app.kind === "brand" ? "+ founding" : ""}
-                  </button>
-                  <button
-                    type="button"
-                    className="button button-quiet !min-h-8 !px-3 text-xs"
-                    onClick={() => reviewApp(app.id, "approved", false)}
-                  >
-                    Approve
-                  </button>
-                  <button
-                    type="button"
-                    className="button button-quiet !min-h-8 !px-3 text-xs"
-                    onClick={() => reviewApp(app.id, "rejected")}
-                  >
-                    Reject
-                  </button>
+          {applications.map((app) => {
+            const payload = app.payload ?? {};
+            const email = String(payload.email ?? "");
+            const brand = String(payload.brand_name ?? payload.full_name ?? "Unknown");
+            const instagram = String(payload.instagram ?? "");
+            const website = String(payload.website ?? payload.portfolio ?? "");
+            const phone = String(payload.phone ?? "");
+            const founding = app.kind === "brand" || payload.purpose === "founding";
+            return (
+              <article key={app.id} className="panel border hairline p-5">
+                <p className="eyebrow">
+                  {founding ? "Founding brand" : app.kind} · {app.status}
+                </p>
+                <h3 className="mt-3 text-lg font-semibold">{brand}</h3>
+                <p className="mt-1 text-sm text-[color:var(--muted)]">
+                  Plan they are using: {String(payload.plan ?? "—")}
+                </p>
+                <div className="mt-4 grid gap-1 text-sm">
+                  {email && (
+                    <a href={`mailto:${email}`} className="underline underline-offset-4">
+                      {email}
+                    </a>
+                  )}
+                  {phone && <p>{phone}</p>}
+                  {instagram && <p>{instagram}</p>}
+                  {website && (
+                    <a href={website} className="underline underline-offset-4" target="_blank" rel="noreferrer">
+                      {website}
+                    </a>
+                  )}
                 </div>
-              )}
-            </article>
-          ))}
+                {app.status === "pending" && (
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      className="button button-dark !min-h-8 !px-3 text-xs"
+                      onClick={() => reviewApp(app.id, "approved", founding)}
+                    >
+                      {founding ? "Accept founding request" : "Approve"}
+                    </button>
+                    <button
+                      type="button"
+                      className="button button-quiet !min-h-8 !px-3 text-xs"
+                      onClick={() => reviewApp(app.id, "rejected")}
+                    >
+                      Decline
+                    </button>
+                  </div>
+                )}
+              </article>
+            );
+          })}
         </div>
       )}
 

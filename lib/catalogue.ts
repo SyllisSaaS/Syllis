@@ -1,5 +1,6 @@
 import { cache } from "react";
 import type { Ad, Brand, CatalogueSource, Collection, Product } from "./data";
+import { clampFocus } from "./appearance";
 import { demoAds, demoBrands, demoProducts, slugify, styles } from "./data";
 import { createClient } from "./supabase/server";
 import { createServiceClient } from "./supabase/service";
@@ -53,6 +54,14 @@ function mapBrand(row: Record<string, unknown>): AdminBrand {
     products: 0,
     live: Boolean(row.live),
     source: (row.source as CatalogueSource) || "real",
+    avatarUrl: (row.avatar_url as string | null) || undefined,
+    avatarX: clampFocus(row.avatar_x),
+    avatarY: clampFocus(row.avatar_y),
+    bannerMode: row.banner_mode === "image" ? "image" : "color",
+    bannerColor: String(row.banner_color ?? "#141414"),
+    bannerUrl: (row.banner_url as string | null) || undefined,
+    bannerX: clampFocus(row.banner_x),
+    bannerY: clampFocus(row.banner_y),
   };
 }
 
@@ -74,6 +83,8 @@ function mapProduct(row: Record<string, unknown>): AdminProduct {
     brandSlug: (row.brand_slug as string | null) || slugify(String(row.label ?? "")),
     live: Boolean(row.live),
     source: (row.source as CatalogueSource) || "real",
+    imageX: clampFocus(row.image_x),
+    imageY: clampFocus(row.image_y),
   };
 }
 

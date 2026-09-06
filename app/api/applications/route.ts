@@ -61,16 +61,24 @@ export async function PATCH(request: Request) {
   }
 
   const verified = body.status === "approved";
-  const updates: Record<string, unknown> = {
-    verification_status: verified ? "verified" : "rejected",
-    brand_status: application.kind === "brand" ? (verified ? "active" : "rejected") : undefined,
-  };
-  if (application.kind === "brand" && verified && body.founding_brand) {
-    updates.founding_brand = true;
-    updates.founding_started_at = new Date().toISOString();
+  const updates: Record<string, unknown> = {};
+
+  if (application.kind === "stylist") {
+    updates.verification_status = verified ? "verified" : "rejected";
   }
 
-  await supabase.from(T.profiles).update(updates).eq("id", application.user_id);
+  if (application.kind === "brand") {
+    updates.brand_status = "active";
+    updates.verification_status = "verified";
+    if (verified) {
+      updates.founding_brand = true;
+      updates.founding_started_at = new Date().toISOString();
+    }
+  }
+
+  if (Object.keys(updates).length) {
+    await supabase.from(T.profiles).update(updates).eq("id", application.user_id);
+  }
 
   return NextResponse.json({ application });
 }

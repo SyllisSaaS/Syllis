@@ -1,4 +1,5 @@
 import type { Look } from "./look";
+import { paymentsLive } from "./billing";
 import {
   getEntitlements,
   isBrandPlan,
@@ -30,6 +31,10 @@ export type Profile = {
   founding_started_at: string | null;
   email_confirmed: boolean;
   created_at: string | null;
+  avatar_url: string | null;
+  avatar_x: number;
+  avatar_y: number;
+  bio: string | null;
 };
 
 export function normalizePlan(value: unknown): PlanId {
@@ -51,12 +56,19 @@ export function normalizeVerification(value: unknown): VerificationStatus {
   return "unverified";
 }
 
-export function membershipActive(profile: Pick<Profile, "plan" | "subscription_status" | "trial_ends_at">) {
+export function membershipActive(
+  profile: Pick<Profile, "plan" | "role" | "subscription_status" | "trial_ends_at">
+) {
   if (profile.plan === "free") return true;
+  if (!paymentsLive() && (profile.role === "brand" || isBrandPlan(profile.plan))) return true;
   const status = profile.subscription_status;
   if (status === "active" || status === "trialing") return true;
   if (isTrialActive(profile.trial_ends_at)) return true;
   return false;
+}
+
+export function canUseStudio(profile: Pick<Profile, "role">) {
+  return profile.role === "brand" || profile.role === "admin";
 }
 
 export function effectivePlan(profile: Pick<Profile, "plan" | "role" | "subscription_status" | "trial_ends_at">): PlanId {

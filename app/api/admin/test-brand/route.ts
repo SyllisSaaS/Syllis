@@ -71,6 +71,38 @@ export async function POST() {
     return NextResponse.json({ error: profileError.message }, { status: 400 });
   }
 
+  const brandRow = {
+    id: slug,
+    slug,
+    name: "Test Label",
+    niche: "Minimal",
+    location: "London",
+    description: "A test label for Studio uploads.",
+    image: "",
+    live: true,
+    source: "real",
+    owner_id: data.user.id,
+    banner_mode: "color",
+    banner_color: "#141414",
+  };
+  const brandInsert = await supabase.from(T.brands).upsert(brandRow, { onConflict: "id" });
+  if (brandInsert.error) {
+    await supabase.from(T.brands).upsert(
+      {
+        id: slug,
+        slug,
+        name: "Test Label",
+        niche: "Minimal",
+        location: "London",
+        description: "A test label for Studio uploads.",
+        image: "",
+        live: true,
+        source: "real",
+      },
+      { onConflict: "id" }
+    );
+  }
+
   return NextResponse.json({
     email,
     password: pass,

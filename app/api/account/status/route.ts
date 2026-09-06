@@ -1,8 +1,10 @@
+import { paymentsLive } from "@/lib/billing";
 import { isStripeConfigured, isSupabaseConfigured } from "@/lib/env";
 
 export function GET() {
   return Response.json({
     supabase: isSupabaseConfigured(),
-    stripe: isStripeConfigured(),
+    stripe: isStripeConfigured() && paymentsLive(),
+    payments: paymentsLive(),
   });
 }

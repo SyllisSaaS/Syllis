@@ -31,12 +31,22 @@ export async function POST(request: Request) {
   const admin = isAdminEmail(user.email);
 
   if (existing) {
+    const repairs: Record<string, unknown> = {};
     if (admin && existing.role !== "admin") {
-      await db.from(T.profiles).update({ role: "admin", verification_status: "verified" }).eq("id", user.id);
+      repairs.role = "admin";
+      repairs.verification_status = "verified";
+    }
+    if (existing.role === "brand" && existing.verification_status !== "verified") {
+      repairs.verification_status = "verified";
+      repairs.brand_status = "active";
+    }
+    if (existing.role === "brand" && !existing.subscription_status) {
+      repairs.subscription_status = "active";
     }
     const look = isLook(body.look) ? body.look : null;
-    if (look && !existing.look) {
-      await db.from(T.profiles).update({ look }).eq("id", user.id);
+    if (look && !existing.look) repairs.look = look;
+    if (Object.keys(repairs).length) {
+      await db.from(T.profiles).update(repairs).eq("id", user.id);
     }
     const { data: refreshed } = await db.from(T.profiles).select("*").eq("id", user.id).maybeSingle();
     const profile = mapProfile(user, refreshed);
@@ -64,7 +74,7 @@ export async function POST(request: Request) {
       : role === "admin"
         ? "premium"
         : "free";
-  const foundingBrand = role === "brand" && (body.founding_brand === true || meta.founding_brand === true);
+  const wantsFounding = role === "brand" && (body.founding_brand === true || meta.founding_brand === true);
   const foundingMember =
     (role === "shopper" && (body.founding_member === true || meta.founding_member === true)) || role === "admin";
   const acceptedLegal = body.accepted_legal === true || meta.accepted_legal === true;
@@ -91,13 +101,13 @@ export async function POST(request: Request) {
     plan,
     look,
     brand_slug: brandSlug,
-    verification_status: role === "shopper" || role === "admin" ? "verified" : "pending",
-    brand_status: role === "brand" ? "pending" : "pending",
-    founding_brand: foundingBrand,
+    verification_status: role === "stylist" ? "pending" : "verified",
+    brand_status: role === "brand" ? "active" : "pending",
+    founding_brand: false,
     founding_member: foundingMember,
-    founding_started_at: foundingBrand || foundingMember ? new Date().toISOString() : null,
-    trial_ends_at: role === "brand" && !foundingBrand ? trialEndDate().toISOString() : null,
-    subscription_status: role === "brand" ? "trialing" : null,
+    founding_started_at: foundingMember ? new Date().toISOString() : null,
+    trial_ends_at: role === "brand" ? trialEndDate().toISOString() : null,
+    subscription_status: role === "brand" ? "active" : null,
     terms_accepted_at: acceptedAt,
     privacy_accepted_at: acceptedAt,
   };
@@ -107,26 +117,30 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 400 });
   }
 
-  if (role === "brand" || role === "stylist") {
+  if (role === "stylist" || wantsFounding) {
+    const kind = role === "stylist" ? "stylist" : "brand";
     const { data: open } = await db
       .from(T.applications)
       .select("id")
       .eq("user_id", user.id)
-      .eq("kind", role)
+      .eq("kind", kind)
       .eq("status", "pending")
       .maybeSingle();
     if (!open) {
       await db.from(T.applications).insert({
         user_id: user.id,
-        kind: role,
+        kind,
         status: "pending",
         payload: {
+          purpose: wantsFounding ? "founding" : "stylist",
           full_name: profile.full_name,
+          brand_name: body.brand_name ?? meta.brand_name ?? profile.full_name,
           brand_slug: brandSlug,
           plan,
-          founding_brand: foundingBrand,
+          email: user.email,
+          phone: body.phone ?? meta.phone ?? null,
           instagram: body.instagram ?? meta.instagram ?? null,
-          portfolio: body.portfolio ?? meta.portfolio ?? null,
+          website: body.website ?? body.portfolio ?? meta.website ?? meta.portfolio ?? null,
           bio: body.bio ?? meta.bio ?? null,
         },
       });

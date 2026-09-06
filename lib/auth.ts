@@ -7,6 +7,7 @@ import {
   normalizeVerification,
   type Profile,
 } from "@/lib/profile";
+import { clampFocus } from "@/lib/appearance";
 
 export async function getAuthUser() {
   const supabase = await createClient();
@@ -52,6 +53,10 @@ export function mapProfile(
     founding_started_at: (data?.founding_started_at as string | null) ?? null,
     email_confirmed: Boolean(user.email_confirmed_at),
     created_at: (data?.created_at as string | null) ?? user.created_at ?? null,
+    avatar_url: (data?.avatar_url as string | null) ?? null,
+    avatar_x: clampFocus(data?.avatar_x),
+    avatar_y: clampFocus(data?.avatar_y),
+    bio: (data?.bio as string | null) ?? null,
   };
 }
 

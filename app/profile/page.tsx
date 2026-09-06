@@ -20,6 +20,11 @@ type Profile = {
   founding_brand: boolean | null;
   founding_member: boolean | null;
   created_at: string | null;
+  avatar_url?: string | null;
+  avatar_x?: number;
+  avatar_y?: number;
+  bio?: string | null;
+  brand_slug?: string | null;
 };
 
 export default function ProfilePage() {
@@ -174,8 +179,9 @@ export default function ProfilePage() {
               </h1>
 
               <p className="mt-6 max-w-lg text-sm leading-6 text-[color:var(--muted)]">
-                Your personal Syllis space for saved pieces, preferences and
-                early access.
+                {profile.role === "brand"
+                  ? "Your brand account. Edit your photo here, then customise the public label page in Studio."
+                  : "Your personal Syllis space for saved pieces, a profile photo and early access."}
               </p>
             </div>
 
@@ -199,8 +205,19 @@ export default function ProfilePage() {
         <section className="grid gap-5 py-8 md:grid-cols-[1.5fr_1fr]">
           <div className="border hairline p-7 md:p-9">
             <div className="flex flex-col gap-7 sm:flex-row sm:items-center">
-              <div className="flex h-24 w-24 shrink-0 items-center justify-center bg-[color:var(--text)] text-3xl font-semibold text-[color:var(--bg)]">
-                {initials}
+              <div className="h-24 w-24 shrink-0 overflow-hidden bg-[color:var(--text)] text-3xl font-semibold text-[color:var(--bg)]">
+                {profile.avatar_url ? (
+                  <img
+                    src={profile.avatar_url}
+                    alt=""
+                    className="h-full w-full object-cover"
+                    style={{
+                      objectPosition: `${profile.avatar_x ?? 50}% ${profile.avatar_y ?? 50}%`,
+                    }}
+                  />
+                ) : (
+                  <div className="grid h-full w-full place-items-center">{initials}</div>
+                )}
               </div>
 
               <div>
@@ -234,6 +251,10 @@ export default function ProfilePage() {
                   <p className="mt-1 text-sm text-[color:var(--muted)]">
                     {profile.email}
                   </p>
+                )}
+
+                {profile.bio && (
+                  <p className="mt-4 max-w-md text-sm leading-6 text-[color:var(--muted)]">{profile.bio}</p>
                 )}
 
                 <p className="mt-5 text-xs text-[color:var(--muted)]">
@@ -342,7 +363,7 @@ export default function ProfilePage() {
               </p>
 
               <p className="mt-2 text-xs leading-5 text-[color:var(--muted)] group-hover:text-current">
-                Analytics and plan controls for labels.
+                Banner, profile photo, pieces and analytics.
               </p>
 
               <ArrowRight

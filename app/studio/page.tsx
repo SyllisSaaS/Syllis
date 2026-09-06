@@ -1,18 +1,20 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { getProfile } from "@/lib/auth";
-import { profileEntitlements } from "@/lib/profile";
-import { CheckoutButton } from "@/components/checkout-button";
+import { canUseStudio, profileEntitlements } from "@/lib/profile";
 import { StudioAds } from "@/components/studio-ads";
+import { StudioPlan } from "@/components/studio-plan";
+import { StudioProfile } from "@/components/studio-profile";
+import { StudioProducts } from "@/components/studio-products";
 import { AnalyticsDashboard } from "@/components/analytics-dashboard";
 
 export default async function StudioPage({
   searchParams,
 }: {
-  searchParams: Promise<{ ad?: string }>;
+  searchParams: Promise<{ ad?: string; welcome?: string }>;
 }) {
   const profile = await getProfile();
-  const { ad } = await searchParams;
+  const { ad, welcome } = await searchParams;
 
   if (!profile) {
     return (
@@ -34,7 +36,7 @@ export default async function StudioPage({
     );
   }
 
-  if (profile.role !== "brand" && profile.role !== "admin") {
+  if (!canUseStudio(profile)) {
     return (
       <div className="page-shell section-space">
         <p className="eyebrow mb-4">Brand studio</p>
@@ -50,25 +52,6 @@ export default async function StudioPage({
   }
 
   const access = profileEntitlements(profile);
-  const verified = profile.verification_status === "verified" || profile.role === "admin";
-
-  if (!verified) {
-    return (
-      <div className="page-shell section-space">
-        <p className="eyebrow mb-4">Brand studio</p>
-        <h1 className="text-5xl font-semibold tracking-[-.06em]">Application pending.</h1>
-        <p className="mt-4 max-w-md text-sm text-[color:var(--muted)]">
-          {profile.verification_status === "rejected"
-            ? "This application was not approved. Contact Syllis if that looks wrong."
-            : "Your brand is in review. Listing and analytics unlock once an admin verifies the account. You can still browse the public site."}
-        </p>
-        <p className="mt-3 text-xs text-[color:var(--muted)]">
-          Status: {profile.verification_status}
-          {profile.founding_brand ? " · founding brand" : ""}
-        </p>
-      </div>
-    );
-  }
 
   return (
     <div className="page-shell section-space">
@@ -78,26 +61,29 @@ export default async function StudioPage({
           <h1 className="text-[clamp(48px,7vw,88px)] font-semibold leading-[.86] tracking-[-.07em]">
             {profile.full_name || profile.brand_slug || "Your label"}
           </h1>
-          <p className="mt-4 text-sm text-[color:var(--muted)]">
-            {access.entitlements.name} plan
-            {access.active ? "" : " · trial ended, dashboard is read-only"}
-            {profile.trial_ends_at && access.active
-              ? ` · trial until ${new Date(profile.trial_ends_at).toLocaleDateString("en-GB")}`
-              : ""}
+          <p className="mt-4 max-w-xl text-sm text-[color:var(--muted)]">
+            {access.entitlements.name} plan is live on this account
+            {profile.founding_brand ? " · founding brand" : ""}
+            . Payments are paused, so nothing will be charged. Set your public look, upload pieces,
+            then check how they perform.
           </p>
         </div>
         <div className="flex flex-wrap gap-3">
           <Link href="/studio/analytics" className="button button-dark">
             Open analytics <ArrowRight size={14} />
           </Link>
-          {!access.active && (
-            <CheckoutButton plan={access.plan === "free" ? "starter" : access.plan} className="button button-quiet">
-              Resume plan
-            </CheckoutButton>
-          )}
+          {profile.founding_brand ? (
+            <p className="text-xs text-[color:var(--muted)]">Founding year is reserved on this account.</p>
+          ) : null}
         </div>
       </div>
 
+      {welcome && (
+        <p className="mt-8 border hairline p-4 text-sm">
+          Welcome. Start with a profile photo and banner, then add your first piece. Shoppers will only see
+          what you mark as live.
+        </p>
+      )}
       {ad === "success" && (
         <p className="mt-8 text-sm">Ad payment received. It goes live when the webhook confirms — usually a few seconds.</p>
       )}
@@ -123,6 +109,18 @@ export default async function StudioPage({
           <p className="mt-4 text-3xl font-semibold">{access.entitlements.earlyAccess ? "Yes" : "No"}</p>
           <p className="mt-2 text-xs text-[color:var(--muted)]">Early-access controls</p>
         </div>
+      </div>
+
+      <div className="mt-12">
+        <StudioPlan current={access.plan} />
+      </div>
+
+      <div className="mt-8">
+        <StudioProfile customBanner={access.entitlements.customBanner} />
+      </div>
+
+      <div className="mt-8">
+        <StudioProducts />
       </div>
 
       <div className="mt-12">

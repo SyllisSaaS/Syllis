@@ -17,21 +17,6 @@ export default async function StudioAnalyticsPage() {
     );
   }
 
-  if (profile.role === "brand" && profile.verification_status !== "verified") {
-    return (
-      <div className="page-shell section-space">
-        <p className="eyebrow mb-4">Analytics</p>
-        <h1 className="text-4xl font-semibold">Verification required.</h1>
-        <p className="mt-4 max-w-md text-sm text-[color:var(--muted)]">
-          Analytics unlock after your brand application is approved.
-        </p>
-        <Link href="/studio" className="button button-quiet mt-8">
-          Back to studio
-        </Link>
-      </div>
-    );
-  }
-
   return (
     <div className="page-shell section-space">
       <Link href="/studio" className="mb-8 inline-flex items-center gap-2 text-xs">

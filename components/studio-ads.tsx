@@ -8,8 +8,7 @@ function money(pence: number) {
 }
 
 export function StudioAds({
-  defaultBrand,
-  productSlug,
+  defaultBrand: _defaultBrand,
 }: {
   defaultBrand: string;
   productSlug?: string;
@@ -25,9 +24,6 @@ export function StudioAds({
     cap: number;
     label: string;
   } | null>(null);
-  const [error, setError] = useState("");
-  const [busy, setBusy] = useState(false);
-
   useEffect(() => {
     const url = `/api/ads/quote?placement=${encodeURIComponent(placement)}&days=${days}`;
     fetch(url)
@@ -38,31 +34,6 @@ export function StudioAds({
       })
       .catch(() => undefined);
   }, [placement, days]);
-
-  async function pay() {
-    setBusy(true);
-    setError("");
-    const response = await fetch("/api/stripe/checkout", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        kind: "ad",
-        placement,
-        days,
-        title,
-        brand: defaultBrand,
-        image,
-        productSlug,
-      }),
-    });
-    const payload = (await response.json()) as { url?: string; error?: string };
-    if (!response.ok || !payload.url) {
-      setError(payload.error || "Checkout is not available yet.");
-      setBusy(false);
-      return;
-    }
-    window.location.href = payload.url;
-  }
 
   return (
     <div className="panel border hairline p-6">
@@ -111,10 +82,12 @@ export function StudioAds({
           {quote.renewals > 0 ? ` · renewal ${Math.min(quote.renewals, 4)}` : " · first booking"}
         </p>
       )}
-      <button type="button" className="button button-dark mt-6" disabled={busy || !title} onClick={() => void pay()}>
-        {busy ? "Redirecting…" : "Pay and go live"}
+      <button type="button" className="button button-dark mt-6" disabled>
+        Payments paused
       </button>
-      {error && <p className="mt-3 text-xs text-red-500">{error}</p>}
+      <p className="mt-3 text-xs text-[color:var(--muted)]">
+        Ad checkout is off for now. No money will be taken in or out.
+      </p>
     </div>
   );
 }

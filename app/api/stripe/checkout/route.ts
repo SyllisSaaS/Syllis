@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getProfile } from "@/lib/auth";
+import { paymentsLive } from "@/lib/billing";
 import { isStripeConfigured, siteUrl } from "@/lib/env";
 import { foundingOffer } from "@/lib/founding";
 import { isBrandPlan, isPlanId, TRIAL_DAYS, type PlanId } from "@/lib/plans";
@@ -11,6 +12,13 @@ import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 
 export async function POST(request: Request) {
+  if (!paymentsLive()) {
+    return NextResponse.json(
+      { error: "Billing is paused. No payments are being taken." },
+      { status: 503 }
+    );
+  }
+
   if (!isStripeConfigured()) {
     return NextResponse.json(
       { error: "Stripe is not configured. Add STRIPE_SECRET_KEY, then create products from Admin → Payments." },

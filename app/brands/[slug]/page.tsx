@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { getLiveCatalogue } from "@/lib/catalogue";
 import { ProductCard } from "@/components/product-card";
 import { ReportButton } from "@/components/report-button";
+import { FramedImage } from "@/components/image-frame";
+import { objectPosition } from "@/lib/appearance";
 
 export const dynamic = "force-dynamic";
 
@@ -12,18 +14,45 @@ export default async function BrandPage({ params }: { params: Promise<{ slug: st
   const brand = brands.find((item) => item.slug === slug);
   if (!brand) notFound();
   const pieces = products.filter((product) => product.brandSlug === brand.slug || product.label === brand.name);
+  const bannerImage = brand.bannerMode === "image" && (brand.bannerUrl || brand.image);
+  const bannerColor = brand.bannerColor || "#141414";
 
   return (
     <div className="page-shell">
-      <section className="border-b hairline py-14 md:py-20">
-        <p className="eyebrow mb-4">Brand</p>
-        <h1 className="text-[clamp(48px,8vw,96px)] font-semibold leading-[.86] tracking-[-.07em]">{brand.name}</h1>
-        <p className="mt-4 text-sm text-[color:var(--muted)]">
-          {brand.niche} / {brand.location}
-        </p>
-        <p className="mt-4 max-w-xl text-sm leading-6 text-[color:var(--muted)]">{brand.description}</p>
-        <div className="mt-6">
-          <ReportButton targetType="brand" targetId={brand.slug} />
+      <section className="overflow-hidden border-b hairline">
+        <div className="relative aspect-[16/6] bg-[color:var(--surface)]" style={{ background: bannerImage ? undefined : bannerColor }}>
+          {bannerImage ? (
+            <img
+              src={bannerImage}
+              alt=""
+              className="h-full w-full object-cover"
+              style={{ objectPosition: objectPosition(brand.bannerX, brand.bannerY) }}
+            />
+          ) : null}
+        </div>
+        <div className="py-10 md:py-14">
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-end">
+            <FramedImage
+              src={brand.avatarUrl}
+              x={brand.avatarX}
+              y={brand.avatarY}
+              shape="circle"
+              className="-mt-16 h-24 w-24 border hairline bg-[color:var(--bg)] sm:h-28 sm:w-28"
+            />
+            <div>
+              <p className="eyebrow mb-3">Brand</p>
+              <h1 className="text-[clamp(40px,7vw,84px)] font-semibold leading-[.86] tracking-[-.07em]">{brand.name}</h1>
+              <p className="mt-3 text-sm text-[color:var(--muted)]">
+                {[brand.niche, brand.location].filter(Boolean).join(" / ")}
+              </p>
+            </div>
+          </div>
+          {brand.description && (
+            <p className="mt-6 max-w-xl text-sm leading-6 text-[color:var(--muted)]">{brand.description}</p>
+          )}
+          <div className="mt-6">
+            <ReportButton targetType="brand" targetId={brand.slug} />
+          </div>
         </div>
       </section>
       <section className="section-space">

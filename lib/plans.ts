@@ -77,6 +77,7 @@ export type Entitlements = {
   exportCsv: boolean;
   comparison: boolean;
   readOnlyWhenLapsed: boolean;
+  customBanner: boolean;
 };
 
 export const shopperPlans = [
@@ -116,7 +117,7 @@ export const brandPlans = [
     products: 15,
     features: [
       "Up to 15 live products",
-      "Brand profile",
+      "Profile photo and a plain colour banner",
       "Plain-text analytics and a simple bar log",
       "Standard discovery placement",
       "7-day free trial",
@@ -130,6 +131,7 @@ export const brandPlans = [
     products: 75,
     features: [
       "Up to 75 live products",
+      "Custom banner photo and profile photo",
       "Basic analytics: stat cards, bar or line",
       "Date range and widget picker",
       "Drop scheduling",
@@ -145,6 +147,7 @@ export const brandPlans = [
     products: 250,
     features: [
       "Up to 250 live products",
+      "Custom banner photo and profile photo",
       "Advanced analytics: funnels, heatmaps, rates",
       "Dashboard builder, comparison, CSV export",
       "Stacked, area, donut and composed charts",
@@ -170,6 +173,7 @@ const ENTITLEMENTS: Record<PlanId, Entitlements> = {
     exportCsv: false,
     comparison: false,
     readOnlyWhenLapsed: false,
+    customBanner: false,
   },
   early: {
     role: "shopper",
@@ -186,6 +190,7 @@ const ENTITLEMENTS: Record<PlanId, Entitlements> = {
     exportCsv: false,
     comparison: false,
     readOnlyWhenLapsed: false,
+    customBanner: false,
   },
   starter: {
     role: "brand",
@@ -202,6 +207,7 @@ const ENTITLEMENTS: Record<PlanId, Entitlements> = {
     exportCsv: false,
     comparison: false,
     readOnlyWhenLapsed: true,
+    customBanner: false,
   },
   growth: {
     role: "brand",
@@ -226,6 +232,7 @@ const ENTITLEMENTS: Record<PlanId, Entitlements> = {
     exportCsv: false,
     comparison: false,
     readOnlyWhenLapsed: true,
+    customBanner: true,
   },
   premium: {
     role: "brand",
@@ -242,6 +249,7 @@ const ENTITLEMENTS: Record<PlanId, Entitlements> = {
     exportCsv: true,
     comparison: true,
     readOnlyWhenLapsed: true,
+    customBanner: true,
   },
 };
 
