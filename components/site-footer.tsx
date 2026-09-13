@@ -16,6 +16,7 @@ export function SiteFooter() {
           <Link href="/drops">Drops</Link>
           <Link href="/stylists">Stylists</Link>
           <Link href="/help">Help</Link>
+          <Link href="/order">Track order</Link>
           <Link href="/pricing">Pricing</Link>
           <Link href="/privacy">Privacy</Link>
           <Link href="/terms">Terms</Link>

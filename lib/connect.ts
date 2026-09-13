@@ -12,6 +12,9 @@ import type { Profile } from "@/lib/profile";
 export const ORDERS_SQL_HINT =
   "Paste supabase/orders.sql into the Supabase SQL editor, then refresh. It adds Connect columns and the syllis_orders table.";
 
+export const TRACKING_SQL_HINT =
+  "Paste supabase/tracking.sql into the Supabase SQL editor, then refresh. It adds verified tracking columns.";
+
 export const SALE_TAKE: Record<"starter" | "growth" | "premium", number> = {
   starter: 0.1,
   growth: 0.08,

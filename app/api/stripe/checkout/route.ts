@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { getProfile } from "@/lib/auth";
 import { paymentsLive } from "@/lib/billing";
-import { brandSaleState, ORDERS_SQL_HINT, poundsToPence, saleTakeRate, splitSalePence } from "@/lib/connect";
+import { brandSaleState, ORDERS_SQL_HINT, TRACKING_SQL_HINT, poundsToPence, saleTakeRate, splitSalePence } from "@/lib/connect";
+import { newTrackToken } from "@/lib/tracking";
 import { isStripeConfigured, siteUrl } from "@/lib/env";
 import { foundingOffer } from "@/lib/founding";
 import { isBrandPlan, isPlanId, TRIAL_DAYS, type PlanId } from "@/lib/plans";
@@ -99,13 +100,24 @@ export async function POST(request: Request) {
         take_rate: split.take,
         currency: "gbp",
         status: "pending",
+        track_token: newTrackToken(),
+        ship_by: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
       })
       .select("*")
       .single();
 
     if (error || !order) {
+      const trackingMissing =
+        isMissingColumn(error) &&
+        /track_token|ship_by|tracking_/i.test(error?.message || "");
       return NextResponse.json(
-        { error: isMissingColumn(error) ? ORDERS_SQL_HINT : error?.message || "Could not start the order." },
+        {
+          error: trackingMissing
+            ? TRACKING_SQL_HINT
+            : isMissingColumn(error)
+              ? ORDERS_SQL_HINT
+              : error?.message || "Could not start the order.",
+        },
         { status: 400 }
       );
     }
@@ -121,7 +133,7 @@ export async function POST(request: Request) {
             unit_amount: amountPence,
             product_data: {
               name: `${product.label} — ${product.name}`,
-              description: `Sold on Syllis. Brand receives ${Math.round((1 - split.take) * 100)}% after they ship.`,
+              description: `Sold on Syllis. Brand is paid after tracking is verified.`,
               images: product.image ? [product.image] : undefined,
             },
           },

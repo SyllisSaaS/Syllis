@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { placementOptions } from "@/lib/ads";
+import { AdminTracking } from "@/components/admin-tracking";
 
 type Prices = Partial<Record<"early" | "starter" | "growth" | "premium", string>>;
 type Booking = {
@@ -91,6 +92,7 @@ export function AdminPayments() {
 
   return (
     <div className="grid gap-6">
+      <AdminTracking />
       <div className="panel border hairline p-6">
         <p className="eyebrow">Stripe</p>
         <h2 className="mt-2 text-2xl font-semibold tracking-[-.03em]">Coordinate payments here.</h2>

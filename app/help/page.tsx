@@ -51,6 +51,14 @@ function ShopperGuide({ asYou }: { asYou: boolean }) {
           </Link>
           .
         </li>
+        <li>
+          Bought a piece? You already paid Syllis at checkout.{" "}
+          <Link href="/order" className="underline underline-offset-4">
+            Track it
+          </Link>{" "}
+          like any shop order. The label is paid when the courier marks it delivered — you do not
+          have to tap anything.
+        </li>
       </ul>
     </section>
   );
@@ -78,8 +86,9 @@ function BrandGuide({ forYou }: { forYou: boolean }) {
             </li>
             <li>
               Upload pieces in Studio. Set up payouts once — Stripe checks who you are. Shoppers
-              buy on Syllis. Money is held until you add tracking, then the rest (after Syllis
-              keeps 10% / 8% / 6% by plan) goes to your Stripe. You never paste a secret key.
+              buy on Syllis. Money is held until the courier marks the parcel delivered, then the
+              rest (after Syllis keeps 10% / 8% / 6% by plan) goes to your Stripe. You never paste a
+              secret key.
             </li>
             <li>
               Ads you buy can sit on All Syllis, a niche, a brand slot (labels pages), or a drop
@@ -88,8 +97,9 @@ function BrandGuide({ forYou }: { forYou: boolean }) {
               45% for four steps, then it holds.
             </li>
             <li>
-              Sales show up in Studio on their own. Add tracking to release the payout. Refunds
-              and disputes are handled on Syllis, not by pasting another shop’s Stripe keys.
+              Sales show up in Studio on their own. Add a real courier and tracking number. The
+              payout waits for the courier to mark delivered. Refunds and disputes are handled on
+              Syllis, not by pasting another shop’s Stripe keys.
             </li>
           </>
         ) : (

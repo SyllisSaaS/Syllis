@@ -188,6 +188,33 @@ export const getLiveCatalogue = cache(async (): Promise<LiveCatalogue> => {
   };
 });
 
+const SOLD_STATUSES = ["paid", "shipped", "transferred"];
+const TRENDING_COUNT = 8;
+
+export async function trendingProducts(products: Product[], limit = TRENDING_COUNT) {
+  if (products.length === 0) return products;
+  const supabase = createServiceClient() ?? (await createClient());
+  const counts = new Map<string, number>();
+
+  if (supabase) {
+    const { data } = await supabase.from(T.orders).select("product_id, product_slug, status");
+    for (const row of data ?? []) {
+      if (!SOLD_STATUSES.includes(String(row.status))) continue;
+      const keys = [row.product_id, row.product_slug].filter(Boolean) as string[];
+      for (const key of keys) counts.set(key, (counts.get(key) ?? 0) + 1);
+    }
+  }
+
+  return [...products]
+    .sort((a, b) => {
+      const salesA = Math.max(counts.get(a.id) ?? 0, counts.get(a.slug) ?? 0);
+      const salesB = Math.max(counts.get(b.id) ?? 0, counts.get(b.slug) ?? 0);
+      if (salesB !== salesA) return salesB - salesA;
+      return Number(b.featured) - Number(a.featured);
+    })
+    .slice(0, limit);
+}
+
 export async function findLiveProduct(slug: string) {
   const { products } = await getLiveCatalogue();
   return products.find((product) => product.slug === slug) ?? null;

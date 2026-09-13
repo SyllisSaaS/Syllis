@@ -16,4 +16,5 @@ export const T = {
   adBookings: "syllis_ad_bookings",
   stripePrices: "syllis_stripe_prices",
   orders: "syllis_orders",
+  settings: "syllis_settings",
 } as const;

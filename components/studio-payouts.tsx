@@ -55,10 +55,11 @@ export function StudioPayouts({ takeRate: initialTake }: { takeRate: number }) {
   return (
     <section className="panel border hairline p-7">
       <p className="eyebrow">Payouts</p>
-      <h2 className="mt-2 text-2xl font-semibold tracking-[-.04em]">Get paid when you ship</h2>
+      <h2 className="mt-2 text-2xl font-semibold tracking-[-.04em]">Get paid when it is verified</h2>
       <p className="mt-2 max-w-xl text-xs leading-5 text-[color:var(--muted)]">
-        Shoppers check out on Syllis. Money is held until you add tracking. Syllis keeps {percent}% on
-        this plan; the rest goes to your Stripe. You never paste a secret key.
+        Shoppers check out on Syllis. Money is held until the courier marks the parcel delivered.
+        Syllis keeps {percent}% on this plan; the rest goes to your Stripe. You never paste a secret
+        key.
       </p>
       <div className="mt-6 flex flex-wrap items-center gap-3">
         <button type="button" className="button button-dark" disabled={busy} onClick={() => void start()}>

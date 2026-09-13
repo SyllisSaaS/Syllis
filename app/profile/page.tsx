@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Heart, LogOut, Settings, User } from "lucide-react";
+import { ArrowRight, Heart, LogOut, Package, Settings, User } from "lucide-react";
 import { CheckoutButton, PortalButton } from "@/components/checkout-button";
 import { isSupabaseConfigured } from "@/lib/env";
 import { createClient } from "@/lib/supabase/client";
@@ -343,6 +343,27 @@ export default function ProfilePage() {
 
               <p className="mt-2 text-xs leading-5 text-[color:var(--muted)] group-hover:text-current">
                 Everything you&apos;ve saved in one place.
+              </p>
+
+              <ArrowRight
+                size={16}
+                className="mt-7 transition-transform group-hover:translate-x-1"
+              />
+            </Link>
+
+            <Link
+              href="/order"
+              className="group border hairline p-7 transition hover:bg-[color:var(--text)] hover:text-[color:var(--bg)]"
+              data-cursor="ORDERS"
+            >
+              <Package size={18} />
+
+              <p className="mt-12 text-xl font-semibold tracking-[-.03em]">
+                Your orders
+              </p>
+
+              <p className="mt-2 text-xs leading-5 text-[color:var(--muted)] group-hover:text-current">
+                Track a piece and confirm when it arrives.
               </p>
 
               <ArrowRight

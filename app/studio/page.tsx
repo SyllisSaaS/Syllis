@@ -71,8 +71,11 @@ export default async function StudioPage({
           </p>
         </div>
         <div className="flex flex-wrap gap-3">
-          <Link href="/studio/analytics" className="button button-dark">
-            Open analytics <ArrowRight size={14} />
+          <Link href="#sales" className="button button-dark">
+            Sales <ArrowRight size={14} />
+          </Link>
+          <Link href="/studio/analytics" className="button button-quiet">
+            Open analytics
           </Link>
           {profile.founding_brand ? (
             <p className="text-xs text-[color:var(--muted)]">Founding year is reserved on this account.</p>
@@ -123,19 +126,19 @@ export default async function StudioPage({
       </div>
 
       <div className="mt-12">
-        <StudioPlan current={access.plan} />
-      </div>
-
-      <div className="mt-8">
-        <StudioProfile customBanner={access.entitlements.customBanner} />
+        <StudioOrders />
       </div>
 
       <div className="mt-8">
         <StudioPayouts takeRate={saleTakeRate(access.plan)} />
       </div>
 
+      <div className="mt-12">
+        <StudioPlan current={access.plan} />
+      </div>
+
       <div className="mt-8">
-        <StudioOrders />
+        <StudioProfile customBanner={access.entitlements.customBanner} />
       </div>
 
       <div className="mt-8">

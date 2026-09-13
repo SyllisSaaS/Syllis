@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { adsForPlacement, styles } from "@/lib/data";
-import { getLiveCatalogue } from "@/lib/catalogue";
+import { getLiveCatalogue, trendingProducts } from "@/lib/catalogue";
 import { ProductCard } from "@/components/product-card";
 import { SectionHeading } from "@/components/section-heading";
 import { AdCard } from "@/components/ad-card";
@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 
 export default async function HomeFeedPage() {
   const { products, brands, ads, collections } = await getLiveCatalogue();
-  const trending = [...products].sort((a, b) => Number(b.featured) - Number(a.featured)).slice(0, 4);
+  const trending = await trendingProducts(products, 8);
   const latest = products.slice(-4).reverse();
   const featuredBrands = brands.filter((brand) => brand.featured);
   const hero = collections[0];
